@@ -10,11 +10,17 @@ import type {
   Vehicle,
 } from '../types/travelmate';
 
-export const HERO_IMAGE = '/src/assets/images/hero_hunza_valley_1795006597097.jpg';
-export const IMG_ATTABAD = '/src/assets/images/dest_attabad_lake_1795006596740.jpg';
-export const IMG_SKARDU = '/src/assets/images/dest_skardu_deosai_1795006597285.jpg';
-export const IMG_FAIRY = '/src/assets/images/dest_fairy_meadows_1795006597940.jpg';
-export const IMG_SWAT = '/src/assets/images/dest_swat_kaghan_1795006597945.jpg';
+import heroHunzaImg from '../assets/images/hero_hunza_valley_1795006597097.jpg';
+import attabadLakeImg from '../assets/images/dest_attabad_lake_1795006596740.jpg';
+import skarduDeosaiImg from '../assets/images/dest_skardu_deosai_1795006597285.jpg';
+import fairyMeadowsImg from '../assets/images/dest_fairy_meadows_1795006597940.jpg';
+import swatKaghanImg from '../assets/images/dest_swat_kaghan_1795006597945.jpg';
+
+export const HERO_IMAGE = heroHunzaImg;
+export const IMG_ATTABAD = attabadLakeImg;
+export const IMG_SKARDU = skarduDeosaiImg;
+export const IMG_FAIRY = fairyMeadowsImg;
+export const IMG_SWAT = swatKaghanImg;
 
 export const SEED_DESTINATIONS: Destination[] = [
   {

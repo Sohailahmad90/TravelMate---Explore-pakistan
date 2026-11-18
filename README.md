@@ -26,3 +26,12 @@ npm run lint      # Runs TypeScript type checking (tsc --noEmit)
 npm run build     # Builds production frontend assets into dist/
 npm start         # Runs production Express server on port 3000
 ```
+
+## GitHub Pages Deployment
+GitHub Pages cannot execute unbuilt `/src/main.tsx` TypeScript files from the repository root and serves project sites under `/<repo-name>/`. This project is configured with `base: './'` in `vite.config.ts` and a GitHub Actions workflow at `.github/workflows/deploy.yml`.
+
+1. Push your repository to GitHub on `main` (or `master`).
+2. Open your repository **Settings -> Pages**, set **Source** to **GitHub Actions**, and let the **Deploy TravelMate to GitHub Pages** workflow run.
+3. In **Firebase Console -> Authentication -> Settings -> Authorized domains**, add `<your-username>.github.io` so Google Sign-In works on your GitHub Pages domain.
+4. Note: GitHub Pages hosts static frontend assets only; server-side `/api/ai/*` routes require running the Express backend (`npm start` on Cloud Run, Render, Railway, or a Node host with `GEMINI_API_KEY`).
+
