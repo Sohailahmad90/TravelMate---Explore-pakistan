@@ -29,6 +29,7 @@ function TravelMateShell() {
   const [route, setRoute] = useState<AppRoute>('home');
   const [plannerDestination, setPlannerDestination] = useState<string>('Hunza Valley');
   const [selectedDestId, setSelectedDestId] = useState<string | null>(null);
+  const [selectedGuideId, setSelectedGuideId] = useState<string | null>(null);
   const [marketplaceInitialTab, setMarketplaceInitialTab] = useState<ServiceTab>('packages');
   const [marketplaceDestFilter, setMarketplaceDestFilter] = useState<string>('All');
   const [dashboardInitialTab, setDashboardInitialTab] = useState<DashboardQuickTab>('overview');
@@ -124,6 +125,7 @@ function TravelMateShell() {
         activeDashboardTab={dashboardInitialTab}
         onNavigate={(r) => {
           setDashboardInitialTab('overview');
+          setSelectedGuideId(null);
           if (r === 'guides') {
             setMarketplaceInitialTab('guides');
             setMarketplaceDestFilter('All');
@@ -134,6 +136,7 @@ function TravelMateShell() {
           navigateTo(r);
         }}
         onOpenMarketplaceTab={(tab) => {
+          setSelectedGuideId(null);
           setMarketplaceInitialTab(tab);
           setMarketplaceDestFilter('All');
           navigateTo(tab === 'guides' ? 'guides' : 'packages');
@@ -149,6 +152,7 @@ function TravelMateShell() {
         {route === 'home' && (
           <HomeView
             onNavigate={(r) => {
+              setSelectedGuideId(null);
               if (r === 'guides') {
                 setMarketplaceInitialTab('guides');
                 setMarketplaceDestFilter('All');
@@ -159,6 +163,7 @@ function TravelMateShell() {
               navigateTo(r);
             }}
             onOpenMarketplaceTab={(tab) => {
+              setSelectedGuideId(null);
               setMarketplaceInitialTab(tab);
               setMarketplaceDestFilter('All');
               navigateTo(tab === 'guides' ? 'guides' : 'packages');
@@ -170,6 +175,12 @@ function TravelMateShell() {
             onSelectDestinationDetail={(destId) => {
               setSelectedDestId(destId);
               navigateTo('destinations');
+            }}
+            onSelectGuideProfile={(guideUid) => {
+              setSelectedGuideId(guideUid);
+              setMarketplaceInitialTab('guides');
+              setMarketplaceDestFilter('All');
+              navigateTo('guides');
             }}
             onOpenAuthModal={openAuthModal}
           />
@@ -206,6 +217,7 @@ function TravelMateShell() {
           <MarketplaceView
             initialTab={route === 'guides' ? 'guides' : marketplaceInitialTab}
             initialDestinationFilter={marketplaceDestFilter}
+            initialSelectedGuideId={selectedGuideId}
             onRequireSignIn={() => openAuthModal('signin')}
             onOpenMessages={() => {
               setDashboardInitialTab('messages');

@@ -28,6 +28,7 @@ interface HomeViewProps {
   onOpenMarketplaceTab?: (tab: ServiceTab) => void;
   onSelectDestinationForPlanner: (destName: string) => void;
   onSelectDestinationDetail: (destId: string) => void;
+  onSelectGuideProfile?: (guideUid: string) => void;
   onOpenAuthModal: (tab?: AuthModalTab) => void;
 }
 
@@ -38,6 +39,7 @@ export function HomeView({
   onOpenMarketplaceTab,
   onSelectDestinationForPlanner,
   onSelectDestinationDetail,
+  onSelectGuideProfile,
   onOpenAuthModal,
 }: HomeViewProps) {
   const { destinations, tourPackages, publicProfiles, firebaseUser } = useTravelMate();
@@ -479,7 +481,9 @@ export function HomeView({
                 </span>
                 <button
                   type="button"
-                  onClick={() => onNavigate('guides')}
+                  onClick={() =>
+                    onSelectGuideProfile ? onSelectGuideProfile(guide.uid) : onNavigate('guides')
+                  }
                   className="font-semibold text-[#0D5EFF] hover:underline cursor-pointer"
                 >
                   View Profile

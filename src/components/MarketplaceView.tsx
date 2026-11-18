@@ -1,10 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
+  Award,
   Building2,
   Car,
   Check,
+  Globe,
   Heart,
+  MapPin,
   MessageSquare,
+  Package,
   Search,
   ShieldCheck,
   Sparkles,
@@ -22,6 +26,7 @@ export type ServiceTab = 'packages' | 'guides' | 'hotels' | 'vehicles' | 'experi
 interface MarketplaceViewProps {
   initialTab?: ServiceTab;
   initialDestinationFilter?: string;
+  initialSelectedGuideId?: string | null;
   onRequireSignIn: () => void;
   onOpenMessages: () => void;
 }
@@ -39,9 +44,17 @@ interface BookingModalTarget {
   supportsDriver?: boolean;
 }
 
+function getGuideInitials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return 'TG';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+}
+
 export function MarketplaceView({
   initialTab = 'packages',
   initialDestinationFilter = 'All',
+  initialSelectedGuideId = null,
   onRequireSignIn,
   onOpenMessages,
 }: MarketplaceViewProps) {
@@ -114,6 +127,26 @@ export function MarketplaceView({
     () => publicProfiles.filter((p) => p.role === 'guide'),
     [publicProfiles]
   );
+
+  const [selectedGuide, setSelectedGuide] = useState<PublicProfile | null>(null);
+
+  useEffect(() => {
+    if (!initialSelectedGuideId) {
+      setSelectedGuide(null);
+      return;
+    }
+    const found = guides.find((g) => g.uid === initialSelectedGuideId);
+    if (found) setSelectedGuide(found);
+  }, [initialSelectedGuideId, guides]);
+
+  useEffect(() => {
+    if (!selectedGuide) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSelectedGuide(null);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [selectedGuide]);
 
   const isGuideVerified = (uid: string) =>
     publicProfiles.some((p) => p.uid === uid && p.verificationStatus === 'verified');
@@ -495,30 +528,39 @@ export function MarketplaceView({
             return (
               <div
                 key={guide.uid}
-                className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col justify-between space-y-4"
+                className="bg-white border border-slate-200/90 rounded-2xl p-6 flex flex-col justify-between space-y-4 cool-card"
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <h2 className="font-display text-lg font-bold text-[#0F172A]">
-                        {guide.displayName}
-                      </h2>
-                      <div className="flex items-center gap-1.5 text-xs text-[#0B57D0] font-medium mt-0.5">
-                        <ShieldCheck className="w-3.5 h-3.5" />
-                        <span>
-                          {guide.verificationStatus === 'verified'
-                            ? 'Admin Verified Provider'
-                            : 'Verification Pending'}
-                        </span>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="w-11 h-11 rounded-full bg-gradient-to-br from-[#0D5EFF] to-[#0284C7] text-white text-sm font-bold flex items-center justify-center shrink-0">
+                        {getGuideInitials(guide.displayName)}
+                      </span>
+                      <div className="min-w-0">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedGuide(guide)}
+                          className="font-display text-lg font-bold text-[#0F172A] hover:text-[#0D5EFF] text-left truncate block cursor-pointer"
+                        >
+                          {guide.displayName}
+                        </button>
+                        <div className="flex items-center gap-1.5 text-xs text-[#0B57D0] font-medium mt-0.5">
+                          <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+                          <span>
+                            {guide.verificationStatus === 'verified'
+                              ? 'Admin Verified Provider'
+                              : 'Verification Pending'}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 text-xs font-mono font-semibold tabular-nums">
+                    <div className="flex items-center gap-1 text-xs font-mono font-semibold tabular-nums shrink-0">
                       <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
                       <span>{(guide.avgRating || 4.8).toFixed(1)}</span>
                     </div>
                   </div>
 
-                  <p className="text-sm text-[#0F172A]/75 leading-relaxed">{guide.bio}</p>
+                  <p className="text-sm text-[#0F172A]/75 leading-relaxed line-clamp-3">{guide.bio}</p>
 
                   <div className="text-xs text-[#0F172A]/70 space-y-1">
                     <div>Languages: {(guide.languages || ['Urdu', 'English']).join(' · ')}</div>
@@ -537,8 +579,8 @@ export function MarketplaceView({
                       <div className="font-bold text-[#0D5EFF]">{guide.responseRate || 95}%</div>
                     </div>
                     <div>
-                      <div className="text-[#0F172A]/55 text-[11px]">Cancelled</div>
-                      <div className="font-bold text-[#0D5EFF]">{guide.cancellationCount || 0}</div>
+                      <div className="text-[#0F172A]/55 text-[11px]">Experience</div>
+                      <div className="font-bold text-[#0D5EFF]">{guide.experienceYears || 0} yrs</div>
                     </div>
                   </div>
 
@@ -552,6 +594,13 @@ export function MarketplaceView({
                 <div className="flex items-center gap-2 pt-2 border-t border-slate-200">
                   <button
                     type="button"
+                    onClick={() => setSelectedGuide(guide)}
+                    className="flex-1 px-3 py-2 bg-[#EEF4FF] text-[#0D5EFF] text-xs font-semibold rounded-lg hover:bg-blue-100 transition-colors cursor-pointer"
+                  >
+                    View Profile
+                  </button>
+                  <button
+                    type="button"
                     onClick={() =>
                       void handleMessageProvider(
                         guide.uid,
@@ -559,10 +608,11 @@ export function MarketplaceView({
                         `Guide Inquiry: ${guide.displayName}`
                       )
                     }
-                    className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 border border-slate-200 text-xs font-medium rounded-lg hover:bg-[#F4F7FC] cursor-pointer"
+                    className="p-2 border border-slate-200 text-[#0D5EFF] rounded-lg hover:bg-[#F4F7FC] cursor-pointer"
+                    title="Message guide"
+                    aria-label={`Message ${guide.displayName}`}
                   >
-                    <MessageSquare className="w-3.5 h-3.5" />
-                    <span>Message</span>
+                    <MessageSquare className="w-4 h-4" />
                   </button>
                   <button
                     type="button"
@@ -807,6 +857,298 @@ export function MarketplaceView({
           ))}
         </div>
       )}
+
+      {/* Guide Full Details Popup Modal */}
+      {selectedGuide && (() => {
+        const guidePackages = tourPackages.filter((p) => p.guideId === selectedGuide.uid);
+        const guideReviews = reviews.filter(
+          (r) => r.targetId === selectedGuide.uid && r.moderationStatus === 'published'
+        );
+        const isOwnProfile = selectedGuide.uid === firebaseUser?.uid;
+        return (
+          <div
+            className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto"
+            onClick={() => setSelectedGuide(null)}
+          >
+            <div
+              className="bg-white rounded-2xl max-w-3xl w-full border border-slate-200 shadow-2xl overflow-hidden my-8"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header Banner */}
+              <div className="bg-gradient-to-r from-[#06183D] via-[#0B46B5] to-[#0284C7] text-white p-6 flex items-start justify-between gap-4">
+                <div className="flex items-center gap-4 min-w-0">
+                  <span className="w-16 h-16 rounded-full bg-white/15 border border-white/30 text-white text-xl font-bold flex items-center justify-center shrink-0">
+                    {getGuideInitials(selectedGuide.displayName)}
+                  </span>
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-sky-200 font-medium mb-1">
+                      <span className="inline-flex items-center gap-1">
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        {selectedGuide.verificationStatus === 'verified'
+                          ? 'Admin Verified Pakistan Guide'
+                          : 'Verification Pending'}
+                      </span>
+                      <span aria-hidden="true">·</span>
+                      <span className="font-mono tabular-nums">
+                        {selectedGuide.experienceYears || 0} Years Experience
+                      </span>
+                    </div>
+                    <h2 className="font-display text-2xl font-bold leading-tight truncate">
+                      {selectedGuide.displayName}
+                    </h2>
+                    <div className="flex items-center gap-2 text-xs text-blue-100 mt-1 font-mono tabular-nums">
+                      <span className="inline-flex items-center gap-1 text-amber-300 font-semibold">
+                        <Star className="w-3.5 h-3.5 fill-amber-300" />
+                        {(selectedGuide.avgRating || 4.8).toFixed(1)}
+                      </span>
+                      <span>· {selectedGuide.reviewCount || guideReviews.length} reviews</span>
+                      <span>· PKR 9,500 / day custom guide rate</span>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedGuide(null)}
+                  aria-label="Close guide profile"
+                  className="p-2 rounded-full bg-white/15 hover:bg-white/25 text-white cursor-pointer shrink-0"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Body */}
+              <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+                {/* Bio & Languages / Regions */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                  <div className="md:col-span-2 space-y-4">
+                    <div>
+                      <h3 className="font-display font-bold text-sm text-[#0A2351] mb-1.5">
+                        About Guide &amp; Field Background
+                      </h3>
+                      <p className="text-sm text-slate-700 leading-relaxed">
+                        {selectedGuide.bio ||
+                          'Experienced regional mountain guide available for curated northern circuits, cultural walks, and logistics coordination.'}
+                      </p>
+                    </div>
+
+                    {selectedGuide.expertise && selectedGuide.expertise.length > 0 && (
+                      <div>
+                        <h4 className="text-xs font-semibold text-[#0A2351] mb-1.5 flex items-center gap-1.5">
+                          <Award className="w-3.5 h-3.5 text-[#0D5EFF]" />
+                          Specialties &amp; Expertise
+                        </h4>
+                        <div className="text-xs text-slate-700">
+                          {selectedGuide.expertise.join(' · ')}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="bg-[#EEF4FF]/60 border border-[#0D5EFF]/15 rounded-xl p-4 space-y-3 text-xs">
+                    <div className="font-display font-bold text-sm text-[#0A2351]">
+                      Guide Coverage
+                    </div>
+                    <div className="space-y-2.5 text-slate-700">
+                      <div>
+                        <div className="text-slate-500 flex items-center gap-1 mb-0.5">
+                          <Globe className="w-3.5 h-3.5 text-[#0D5EFF]" />
+                          <span>Languages Spoken</span>
+                        </div>
+                        <div className="font-semibold text-[#0F172A]">
+                          {(selectedGuide.languages || ['Urdu', 'English']).join(' · ')}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-slate-500 flex items-center gap-1 mb-0.5">
+                          <MapPin className="w-3.5 h-3.5 text-[#0D5EFF]" />
+                          <span>Operating Regions</span>
+                        </div>
+                        <div className="font-semibold text-[#0F172A]">
+                          {(selectedGuide.operatingDestinations || ['Northern Pakistan']).join(' · ')}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Trust & Performance Metrics */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-[#F4F7FC] border border-slate-200 rounded-xl p-4 text-xs font-mono tabular-nums">
+                  <div>
+                    <div className="text-slate-500 text-[11px]">Experience</div>
+                    <div className="text-base font-bold text-[#0D5EFF] mt-0.5">
+                      {selectedGuide.experienceYears || 0} yrs
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-slate-500 text-[11px]">Completed Trips</div>
+                    <div className="text-base font-bold text-[#0D5EFF] mt-0.5">
+                      {selectedGuide.completedBookings || 0}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-slate-500 text-[11px]">Response Rate</div>
+                    <div className="text-base font-bold text-[#0D5EFF] mt-0.5">
+                      {selectedGuide.responseRate || 95}%
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-slate-500 text-[11px]">Cancellations</div>
+                    <div className="text-base font-bold text-[#0D5EFF] mt-0.5">
+                      {selectedGuide.cancellationCount || 0}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Published Packages by This Guide */}
+                <div className="space-y-3">
+                  <h3 className="font-display font-bold text-sm text-[#0A2351] flex items-center gap-1.5">
+                    <Package className="w-4 h-4 text-[#0D5EFF]" />
+                    <span>Tour Packages by {selectedGuide.displayName} ({guidePackages.length})</span>
+                  </h3>
+                  {guidePackages.length === 0 ? (
+                    <p className="text-xs text-slate-500 bg-[#F4F7FC] rounded-xl p-3.5">
+                      No fixed packages listed right now — available for custom guided itineraries.
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {guidePackages.map((pkg) => (
+                        <div
+                          key={pkg.id}
+                          className="border border-slate-200 rounded-xl p-4 bg-[#F4F7FC]/70 flex flex-col justify-between gap-3"
+                        >
+                          <div>
+                            <div className="text-[11px] text-[#0D5EFF] font-medium">
+                              {pkg.destinationName} · {pkg.durationDays} Days · Max {pkg.maxGroupSize} guests
+                            </div>
+                            <div className="font-display font-bold text-sm text-[#0F172A] mt-0.5">
+                              {pkg.title}
+                            </div>
+                            <p className="text-xs text-slate-600 mt-1 line-clamp-2">
+                              {pkg.description}
+                            </p>
+                          </div>
+                          <div className="flex items-center justify-between pt-2 border-t border-slate-200">
+                            <span className="font-mono text-sm font-bold text-[#0D5EFF] tabular-nums">
+                              {formatPkr(pkg.pricePerPersonPkr)}
+                              <span className="text-[11px] font-normal text-slate-500"> / person</span>
+                            </span>
+                            {!isGuide && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const targetPkg = pkg;
+                                  setSelectedGuide(null);
+                                  openBookModal({
+                                    type: 'package',
+                                    itemId: targetPkg.id,
+                                    itemTitle: targetPkg.title,
+                                    providerId: targetPkg.guideId,
+                                    providerName: targetPkg.guideName,
+                                    destinationName: targetPkg.destinationName,
+                                    unitPricePkr: targetPkg.pricePerPersonPkr,
+                                    unitLabel: 'per person',
+                                  });
+                                }}
+                                className="px-3 py-1.5 bg-[#0D5EFF] text-white text-xs font-semibold rounded-lg hover:bg-[#0948CC] cursor-pointer"
+                              >
+                                Request Booking
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Verified Reviews */}
+                <div className="space-y-3">
+                  <h3 className="font-display font-bold text-sm text-[#0A2351]">
+                    Verified Traveler Reviews ({guideReviews.length})
+                  </h3>
+                  {guideReviews.length === 0 ? (
+                    <p className="text-xs text-slate-500">
+                      No verified reviews published yet for this guide.
+                    </p>
+                  ) : (
+                    <div className="space-y-2.5">
+                      {guideReviews.map((rev) => (
+                        <div
+                          key={rev.id}
+                          className="border border-slate-200 rounded-xl p-3.5 text-xs space-y-1 bg-white"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold text-[#0F172A]">{rev.authorName}</span>
+                            <span className="inline-flex items-center gap-1 font-mono font-semibold text-amber-500 tabular-nums">
+                              <Star className="w-3 h-3 fill-amber-500" />
+                              {rev.rating.toFixed(1)}
+                            </span>
+                          </div>
+                          <p className="text-slate-600 leading-relaxed">&ldquo;{rev.comment}&rdquo;</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Footer Actions */}
+              <div className="px-6 py-4 border-t border-slate-200 bg-[#F4F7FC] flex flex-wrap items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={() => setSelectedGuide(null)}
+                  className="px-4 py-2 text-xs font-medium border border-slate-200 bg-white rounded-lg hover:bg-slate-50 cursor-pointer"
+                >
+                  Close
+                </button>
+                {!isOwnProfile && (
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const g = selectedGuide;
+                        setSelectedGuide(null);
+                        void handleMessageProvider(
+                          g.uid,
+                          g.displayName,
+                          `Guide Inquiry: ${g.displayName}`
+                        );
+                      }}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 border border-slate-200 bg-white text-[#0A2351] text-xs font-semibold rounded-lg hover:bg-[#EEF4FF] cursor-pointer"
+                    >
+                      <MessageSquare className="w-3.5 h-3.5 text-[#0D5EFF]" />
+                      <span>Message {selectedGuide.displayName.split(' ')[0]}</span>
+                    </button>
+                    {!isGuide && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const g = selectedGuide;
+                          setSelectedGuide(null);
+                          openBookModal({
+                            type: 'custom_trip',
+                            itemId: g.uid,
+                            itemTitle: `Custom Guided Trip with ${g.displayName}`,
+                            providerId: g.uid,
+                            providerName: g.displayName,
+                            destinationName:
+                              (g.operatingDestinations && g.operatingDestinations[0]) || 'Hunza Valley',
+                            unitPricePkr: 9500,
+                            unitLabel: 'per day',
+                          });
+                        }}
+                        className="px-5 py-2 bg-gradient-to-r from-[#0D5EFF] to-[#0284C7] text-white text-xs font-semibold rounded-lg hover:from-[#0948CC] hover:to-[#0369A1] cursor-pointer"
+                      >
+                        Hire Guide (PKR 9,500/day)
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Unified Reservation Modal */}
       {modalTarget && (
