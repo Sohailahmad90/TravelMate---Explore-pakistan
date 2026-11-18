@@ -26,9 +26,10 @@ import {
 } from './dashboard/ProviderPanels';
 import { AdminPanel } from './dashboard/AdminPanel';
 import type { AppRoute } from './Navbar';
+import type { ServiceTab } from './MarketplaceView';
 import type { Booking, EmergencyContact } from '../types/travelmate';
 
-type DashboardTab =
+export type DashboardTab =
   | 'overview'
   | 'bookings'
   | 'itineraries'
@@ -43,9 +44,21 @@ type DashboardTab =
 interface DashboardViewProps {
   initialTab?: DashboardTab;
   onNavigatePublic: (route: AppRoute) => void;
+  onOpenMarketplaceTab?: (tab: ServiceTab) => void;
 }
 
-export function DashboardView({ initialTab = 'overview', onNavigatePublic }: DashboardViewProps) {
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return 'TM';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+}
+
+export function DashboardView({
+  initialTab = 'overview',
+  onNavigatePublic,
+  onOpenMarketplaceTab,
+}: DashboardViewProps) {
   const {
     firebaseUser,
     userProfile,
@@ -56,6 +69,10 @@ export function DashboardView({ initialTab = 'overview', onNavigatePublic }: Das
     notifications,
     expenses,
     reviews,
+    tourPackages,
+    hotels,
+    rooms,
+    vehicles,
     updateBookingStatus,
     deleteItinerary,
     markNotificationRead,
@@ -65,6 +82,9 @@ export function DashboardView({ initialTab = 'overview', onNavigatePublic }: Das
   } = useTravelMate();
 
   const [activeTab, setActiveTab] = useState<DashboardTab>(initialTab);
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
   const [invoiceBooking, setInvoiceBooking] = useState<Booking | null>(null);
   const [reviewTarget, setReviewTarget] = useState<Booking | null>(null);
   const [reviewRating, setReviewRating] = useState(5);
@@ -73,9 +93,13 @@ export function DashboardView({ initialTab = 'overview', onNavigatePublic }: Das
 
   // Profile form state
   const [pName, setPName] = useState(userProfile?.displayName || '');
+  const [pPhotoURL, setPPhotoURL] = useState(
+    userProfile?.photoURL || firebaseUser?.photoURL || ''
+  );
   const [pPhone, setPPhone] = useState(userProfile?.phone || '');
   const [pCity, setPCity] = useState(userProfile?.city || '');
   const [pBio, setPBio] = useState(userProfile?.bio || '');
+  const [avatarFailed, setAvatarFailed] = useState(false);
   const [contacts, setContacts] = useState<EmergencyContact[]>(
     userProfile?.emergencyContacts || []
   );
@@ -87,11 +111,16 @@ export function DashboardView({ initialTab = 'overview', onNavigatePublic }: Das
   useEffect(() => {
     if (!userProfile) return;
     setPName(userProfile.displayName || '');
+    setPPhotoURL(userProfile.photoURL || firebaseUser?.photoURL || '');
     setPPhone(userProfile.phone || '');
     setPCity(userProfile.city || '');
     setPBio(userProfile.bio || '');
     setContacts(userProfile.emergencyContacts || []);
-  }, [userProfile]);
+  }, [userProfile, firebaseUser?.photoURL]);
+
+  useEffect(() => {
+    setAvatarFailed(false);
+  }, [pPhotoURL]);
 
   if (!firebaseUser) {
     return (
@@ -114,35 +143,82 @@ export function DashboardView({ initialTab = 'overview', onNavigatePublic }: Das
   }
 
   const myBookings = bookings.filter((b) => b.touristId === firebaseUser.uid);
+  const incomingBookings = bookings.filter((b) => b.providerId === firebaseUser.uid);
   const totalSpent = expenses.reduce((s, e) => s + e.amountPkr, 0);
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  const isProvider =
-    userProfile?.role === 'guide' ||
-    userProfile?.role === 'hotel_owner' ||
-    userProfile?.role === 'vehicle_owner';
+  const role = userProfile?.role || 'tourist';
+  const isGuide = role === 'guide';
+  const isHotelOwner = role === 'hotel_owner';
+  const isVehicleOwner = role === 'vehicle_owner';
+  const isProvider = isGuide || isHotelOwner || isVehicleOwner;
 
-  const navItems: Array<{ id: DashboardTab; label: string; icon: React.ComponentType<{ className?: string }> }> = [
-    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-    ...(isProvider
-      ? [{ id: 'provider' as const, label: 'Provider Operations', icon: Briefcase }]
-      : []),
-    ...(isAdmin
-      ? [{ id: 'admin' as const, label: 'Administration', icon: Shield }]
-      : []),
-    { id: 'bookings', label: 'My Bookings', icon: CalendarCheck },
-    { id: 'itineraries', label: 'Saved Itineraries', icon: Compass },
-    { id: 'budget', label: 'Budget & Splits', icon: Wallet },
-    { id: 'messages', label: 'Messages', icon: MessageSquare },
-    { id: 'notifications', label: `Notifications${unreadCount ? ` (${unreadCount})` : ''}`, icon: Bell },
-    { id: 'favorites', label: 'Saved Places', icon: Bookmark },
-    { id: 'profile', label: 'Profile & Safety', icon: User },
-  ];
+  const myPackages = tourPackages.filter((p) => p.guideId === firebaseUser.uid);
+  const myHotels = hotels.filter((h) => h.ownerId === firebaseUser.uid);
+  const myHotelIds = new Set(myHotels.map((h) => h.id));
+  const myRoomCount = rooms.filter((r) => myHotelIds.has(r.hotelId)).length;
+  const myVehicles = vehicles.filter((v) => v.ownerId === firebaseUser.uid);
+  const availableVehiclesCount = myVehicles.filter((v) => v.availability === 'available').length;
+  const providerConfirmedRevenue = incomingBookings
+    .filter((b) => b.status === 'confirmed' || b.status === 'completed')
+    .reduce((sum, b) => sum + b.totalPricePkr, 0);
+
+  const navItems: Array<{ id: DashboardTab; label: string; icon: React.ComponentType<{ className?: string }> }> =
+    isGuide
+      ? [
+          { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+          { id: 'provider', label: 'Packages & Requests', icon: Briefcase },
+          { id: 'bookings', label: 'My Hotel & Car Bookings', icon: CalendarCheck },
+          { id: 'messages', label: 'Messages', icon: MessageSquare },
+          { id: 'notifications', label: `Notifications${unreadCount ? ` (${unreadCount})` : ''}`, icon: Bell },
+          { id: 'profile', label: 'Profile & Photo', icon: User },
+        ]
+      : isHotelOwner
+        ? [
+            { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+            { id: 'provider', label: 'Hotels & Reservations', icon: Briefcase },
+            ...(myBookings.length > 0
+              ? [{ id: 'bookings' as const, label: 'My Bookings', icon: CalendarCheck }]
+              : []),
+            { id: 'messages', label: 'Guest Messages', icon: MessageSquare },
+            { id: 'notifications', label: `Notifications${unreadCount ? ` (${unreadCount})` : ''}`, icon: Bell },
+            { id: 'profile', label: 'Profile & Photo', icon: User },
+          ]
+        : isVehicleOwner
+          ? [
+              { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+              { id: 'provider', label: 'Fleet & Rentals', icon: Briefcase },
+              ...(myBookings.length > 0
+                ? [{ id: 'bookings' as const, label: 'My Bookings', icon: CalendarCheck }]
+                : []),
+              { id: 'messages', label: 'Messages', icon: MessageSquare },
+              { id: 'notifications', label: `Notifications${unreadCount ? ` (${unreadCount})` : ''}`, icon: Bell },
+              { id: 'profile', label: 'Profile & Photo', icon: User },
+            ]
+          : isAdmin
+            ? [
+                { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+                { id: 'admin', label: 'Administration', icon: Shield },
+                { id: 'messages', label: 'Messages', icon: MessageSquare },
+                { id: 'notifications', label: `Notifications${unreadCount ? ` (${unreadCount})` : ''}`, icon: Bell },
+                { id: 'profile', label: 'Profile & Photo', icon: User },
+              ]
+            : [
+                { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+                { id: 'bookings', label: 'My Bookings', icon: CalendarCheck },
+                { id: 'itineraries', label: 'Saved Itineraries', icon: Compass },
+                { id: 'budget', label: 'Budget & Splits', icon: Wallet },
+                { id: 'favorites', label: 'Saved Places', icon: Bookmark },
+                { id: 'messages', label: 'Messages', icon: MessageSquare },
+                { id: 'notifications', label: `Notifications${unreadCount ? ` (${unreadCount})` : ''}`, icon: Bell },
+                { id: 'profile', label: 'Profile & Photo', icon: User },
+              ];
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     await updateProfile({
       displayName: pName || userProfile?.displayName || 'Traveler',
+      photoURL: pPhotoURL.trim(),
       phone: pPhone,
       city: pCity,
       bio: pBio,
@@ -197,13 +273,28 @@ export function DashboardView({ initialTab = 'overview', onNavigatePublic }: Das
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Sidebar Navigation */}
         <aside className="lg:col-span-3 bg-white border border-slate-200 rounded-2xl p-4 space-y-4 no-print">
-          <div className="px-3 py-2 border-b border-slate-200">
-            <div className="font-display font-bold text-base text-[#0F172A] truncate">
-              {userProfile?.displayName || firebaseUser.displayName}
-            </div>
-            <div className="text-xs text-[#0B57D0] font-medium mt-0.5 capitalize">
-              {(userProfile?.role || 'tourist').replace('_', ' ')} ·{' '}
-              {userProfile?.verificationStatus || 'active'}
+          <div className="px-3 py-2 border-b border-slate-200 flex items-center gap-3">
+            {(userProfile?.photoURL || firebaseUser.photoURL) && !avatarFailed ? (
+              <img
+                src={userProfile?.photoURL || firebaseUser.photoURL || ''}
+                alt={userProfile?.displayName || firebaseUser.displayName || 'User'}
+                referrerPolicy="no-referrer"
+                onError={() => setAvatarFailed(true)}
+                className="w-10 h-10 rounded-full object-cover border border-[#0D5EFF]/25 shrink-0"
+              />
+            ) : (
+              <span className="w-10 h-10 rounded-full bg-[#0D5EFF] text-white text-xs font-bold flex items-center justify-center shrink-0">
+                {getInitials(userProfile?.displayName || firebaseUser.displayName || 'User')}
+              </span>
+            )}
+            <div className="min-w-0">
+              <div className="font-display font-bold text-base text-[#0F172A] truncate">
+                {userProfile?.displayName || firebaseUser.displayName}
+              </div>
+              <div className="text-xs text-[#0B57D0] font-medium mt-0.5 capitalize">
+                {(userProfile?.role || 'tourist').replace('_', ' ')} ·{' '}
+                {userProfile?.verificationStatus || 'active'}
+              </div>
             </div>
           </div>
 
@@ -240,62 +331,235 @@ export function DashboardView({ initialTab = 'overview', onNavigatePublic }: Das
                     Welcome back, {userProfile?.displayName || firebaseUser.displayName}
                   </h1>
                   <p className="text-sm text-[#0F172A]/70 mt-1">
-                    Manage your journeys, active bookings, PKR budget, and verified services.
+                    {isGuide
+                      ? 'Post and edit tour packages, accept or reject tourist booking requests, and book hotels & 4x4s for your tours.'
+                      : isHotelOwner
+                        ? 'Manage your hotel listings, room inventory, and guest booking requests.'
+                        : isVehicleOwner
+                          ? 'Manage your rental fleet, daily rates, and incoming vehicle charter requests.'
+                          : isAdmin
+                            ? 'Monitor platform safety, verify partner credentials, and publish travel advisories.'
+                            : 'Plan AI trips, book verified packages, hotels, and vehicles, and track your PKR travel budget.'}
                   </p>
                 </div>
+
                 <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => onNavigatePublic('ai-planner')}
-                    className="px-4 py-2 bg-[#0D5EFF] text-white text-xs font-semibold rounded-lg cursor-pointer"
-                  >
-                    Plan New AI Trip
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => onNavigatePublic('safety')}
-                    className="px-4 py-2 border border-slate-200 text-xs font-semibold rounded-lg cursor-pointer"
-                  >
-                    Emergency Center
-                  </button>
+                  {isGuide ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('provider')}
+                        className="px-4 py-2 bg-[#0D5EFF] text-white text-xs font-semibold rounded-lg cursor-pointer"
+                      >
+                        Manage Packages &amp; Requests
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onOpenMarketplaceTab ? onOpenMarketplaceTab('hotels') : onNavigatePublic('packages')
+                        }
+                        className="px-4 py-2 border border-[#0D5EFF]/30 text-[#0D5EFF] bg-[#EEF4FF] text-xs font-semibold rounded-lg cursor-pointer"
+                      >
+                        Book Hotels
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onOpenMarketplaceTab ? onOpenMarketplaceTab('vehicles') : onNavigatePublic('packages')
+                        }
+                        className="px-4 py-2 border border-slate-200 text-xs font-semibold rounded-lg cursor-pointer"
+                      >
+                        Book Cars &amp; 4x4s
+                      </button>
+                    </>
+                  ) : isHotelOwner || isVehicleOwner ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('provider')}
+                        className="px-4 py-2 bg-[#0D5EFF] text-white text-xs font-semibold rounded-lg cursor-pointer"
+                      >
+                        {isHotelOwner ? 'Open Hotels & Reservations' : 'Open Fleet & Rentals'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('messages')}
+                        className="px-4 py-2 border border-slate-200 text-xs font-semibold rounded-lg cursor-pointer"
+                      >
+                        Messages
+                      </button>
+                    </>
+                  ) : isAdmin ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('admin')}
+                        className="px-4 py-2 bg-[#0D5EFF] text-white text-xs font-semibold rounded-lg cursor-pointer"
+                      >
+                        Open Admin Console
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onNavigatePublic('safety')}
+                        className="px-4 py-2 border border-slate-200 text-xs font-semibold rounded-lg cursor-pointer"
+                      >
+                        Emergency Center
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => onNavigatePublic('ai-planner')}
+                        className="px-4 py-2 bg-[#0D5EFF] text-white text-xs font-semibold rounded-lg cursor-pointer"
+                      >
+                        Plan New AI Trip
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onOpenMarketplaceTab ? onOpenMarketplaceTab('packages') : onNavigatePublic('packages')
+                        }
+                        className="px-4 py-2 border border-[#0D5EFF]/30 text-[#0D5EFF] bg-[#EEF4FF] text-xs font-semibold rounded-lg cursor-pointer"
+                      >
+                        Browse Packages
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onNavigatePublic('safety')}
+                        className="px-4 py-2 border border-slate-200 text-xs font-semibold rounded-lg cursor-pointer"
+                      >
+                        Emergency Center
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white border border-slate-200 rounded-xl p-5">
-                  <div className="text-xs text-[#0F172A]/60">My Bookings</div>
-                  <div className="font-mono text-2xl font-bold text-[#0D5EFF] tabular-nums mt-1">
-                    {myBookings.length}
+              {isGuide ? (
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="bg-white border border-slate-200 rounded-xl p-5">
+                    <div className="text-xs text-[#0F172A]/60">Published Packages</div>
+                    <div className="font-mono text-2xl font-bold text-[#0D5EFF] tabular-nums mt-1">
+                      {myPackages.length}
+                    </div>
+                  </div>
+                  <div className="bg-white border border-slate-200 rounded-xl p-5">
+                    <div className="text-xs text-[#0F172A]/60">Tourist Requests</div>
+                    <div className="font-mono text-2xl font-bold text-[#0D5EFF] tabular-nums mt-1">
+                      {incomingBookings.length}
+                    </div>
+                  </div>
+                  <div className="bg-white border border-slate-200 rounded-xl p-5">
+                    <div className="text-xs text-[#0F172A]/60">My Hotel &amp; Car Bookings</div>
+                    <div className="font-mono text-2xl font-bold text-[#0D5EFF] tabular-nums mt-1">
+                      {myBookings.length}
+                    </div>
+                  </div>
+                  <div className="bg-white border border-slate-200 rounded-xl p-5">
+                    <div className="text-xs text-[#0F172A]/60">Confirmed Earnings</div>
+                    <div className="font-mono text-xl font-bold text-[#0B57D0] tabular-nums mt-1">
+                      {formatPkr(providerConfirmedRevenue)}
+                    </div>
                   </div>
                 </div>
-                <div className="bg-white border border-slate-200 rounded-xl p-5">
-                  <div className="text-xs text-[#0F172A]/60">Saved Itineraries</div>
-                  <div className="font-mono text-2xl font-bold text-[#0D5EFF] tabular-nums mt-1">
-                    {itineraries.length}
+              ) : isHotelOwner ? (
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="bg-white border border-slate-200 rounded-xl p-5">
+                    <div className="text-xs text-[#0F172A]/60">My Hotels</div>
+                    <div className="font-mono text-2xl font-bold text-[#0D5EFF] tabular-nums mt-1">
+                      {myHotels.length}
+                    </div>
+                  </div>
+                  <div className="bg-white border border-slate-200 rounded-xl p-5">
+                    <div className="text-xs text-[#0F172A]/60">Room Categories</div>
+                    <div className="font-mono text-2xl font-bold text-[#0D5EFF] tabular-nums mt-1">
+                      {myRoomCount}
+                    </div>
+                  </div>
+                  <div className="bg-white border border-slate-200 rounded-xl p-5">
+                    <div className="text-xs text-[#0F172A]/60">Guest Bookings</div>
+                    <div className="font-mono text-2xl font-bold text-[#0D5EFF] tabular-nums mt-1">
+                      {incomingBookings.length}
+                    </div>
+                  </div>
+                  <div className="bg-white border border-slate-200 rounded-xl p-5">
+                    <div className="text-xs text-[#0F172A]/60">Confirmed Revenue</div>
+                    <div className="font-mono text-xl font-bold text-[#0B57D0] tabular-nums mt-1">
+                      {formatPkr(providerConfirmedRevenue)}
+                    </div>
                   </div>
                 </div>
-                <div className="bg-white border border-slate-200 rounded-xl p-5">
-                  <div className="text-xs text-[#0F172A]/60">Logged Expenses</div>
-                  <div className="font-mono text-xl font-bold text-[#0B57D0] tabular-nums mt-1">
-                    {formatPkr(totalSpent)}
+              ) : isVehicleOwner ? (
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="bg-white border border-slate-200 rounded-xl p-5">
+                    <div className="text-xs text-[#0F172A]/60">My Fleet</div>
+                    <div className="font-mono text-2xl font-bold text-[#0D5EFF] tabular-nums mt-1">
+                      {myVehicles.length}
+                    </div>
+                  </div>
+                  <div className="bg-white border border-slate-200 rounded-xl p-5">
+                    <div className="text-xs text-[#0F172A]/60">Available Vehicles</div>
+                    <div className="font-mono text-2xl font-bold text-[#0D5EFF] tabular-nums mt-1">
+                      {availableVehiclesCount}
+                    </div>
+                  </div>
+                  <div className="bg-white border border-slate-200 rounded-xl p-5">
+                    <div className="text-xs text-[#0F172A]/60">Rental Requests</div>
+                    <div className="font-mono text-2xl font-bold text-[#0D5EFF] tabular-nums mt-1">
+                      {incomingBookings.length}
+                    </div>
+                  </div>
+                  <div className="bg-white border border-slate-200 rounded-xl p-5">
+                    <div className="text-xs text-[#0F172A]/60">Confirmed Revenue</div>
+                    <div className="font-mono text-xl font-bold text-[#0B57D0] tabular-nums mt-1">
+                      {formatPkr(providerConfirmedRevenue)}
+                    </div>
                   </div>
                 </div>
-                <div className="bg-white border border-slate-200 rounded-xl p-5">
-                  <div className="text-xs text-[#0F172A]/60">Saved Destinations</div>
-                  <div className="font-mono text-2xl font-bold text-[#0D5EFF] tabular-nums mt-1">
-                    {favorites.length}
+              ) : (
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="bg-white border border-slate-200 rounded-xl p-5">
+                    <div className="text-xs text-[#0F172A]/60">My Bookings</div>
+                    <div className="font-mono text-2xl font-bold text-[#0D5EFF] tabular-nums mt-1">
+                      {myBookings.length}
+                    </div>
+                  </div>
+                  <div className="bg-white border border-slate-200 rounded-xl p-5">
+                    <div className="text-xs text-[#0F172A]/60">Saved Itineraries</div>
+                    <div className="font-mono text-2xl font-bold text-[#0D5EFF] tabular-nums mt-1">
+                      {itineraries.length}
+                    </div>
+                  </div>
+                  <div className="bg-white border border-slate-200 rounded-xl p-5">
+                    <div className="text-xs text-[#0F172A]/60">Logged Expenses</div>
+                    <div className="font-mono text-xl font-bold text-[#0B57D0] tabular-nums mt-1">
+                      {formatPkr(totalSpent)}
+                    </div>
+                  </div>
+                  <div className="bg-white border border-slate-200 rounded-xl p-5">
+                    <div className="text-xs text-[#0F172A]/60">Saved Destinations</div>
+                    <div className="font-mono text-2xl font-bold text-[#0D5EFF] tabular-nums mt-1">
+                      {favorites.length}
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               {isProvider && (
-                <div className="bg-[#EEF4FF]/60 border border-[#0B57D0]/30 rounded-2xl p-5 flex items-center justify-between gap-4">
+                <div className="bg-[#EEF4FF]/60 border border-[#0B57D0]/30 rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4">
                   <div>
                     <div className="font-display font-bold text-[#0D5EFF]">
-                      Provider Workspace Ready
+                      {isGuide
+                        ? 'Tour Guide Workspace Ready'
+                        : isHotelOwner
+                          ? 'Hotel Partner Portal Ready'
+                          : 'Vehicle Fleet Portal Ready'}
                     </div>
                     <p className="text-xs text-[#0F172A]/75 mt-0.5">
-                      Manage your listings, incoming customer reservations, and verification documents.
+                      {isGuide
+                        ? 'Post packages, accept/reject incoming tourist requests, and submit verification credentials.'
+                        : 'Manage your listings, incoming customer reservations, and verification documents.'}
                     </p>
                   </div>
                   <button
@@ -303,7 +567,7 @@ export function DashboardView({ initialTab = 'overview', onNavigatePublic }: Das
                     onClick={() => setActiveTab('provider')}
                     className="px-4 py-2 bg-[#0D5EFF] text-white text-xs font-semibold rounded-lg cursor-pointer"
                   >
-                    Open Provider Operations
+                    {isGuide ? 'Open Packages & Requests' : 'Open Provider Operations'}
                   </button>
                 </div>
               )}
@@ -328,21 +592,56 @@ export function DashboardView({ initialTab = 'overview', onNavigatePublic }: Das
             </div>
           )}
 
-          {activeTab === 'provider' && userProfile?.role === 'guide' && <GuideDashboardPanel />}
-          {activeTab === 'provider' && userProfile?.role === 'hotel_owner' && <HotelDashboardPanel />}
-          {activeTab === 'provider' && userProfile?.role === 'vehicle_owner' && <VehicleDashboardPanel />}
+          {activeTab === 'provider' && isGuide && (
+            <GuideDashboardPanel
+              onBookHotels={() =>
+                onOpenMarketplaceTab ? onOpenMarketplaceTab('hotels') : onNavigatePublic('packages')
+              }
+              onBookCars={() =>
+                onOpenMarketplaceTab ? onOpenMarketplaceTab('vehicles') : onNavigatePublic('packages')
+              }
+            />
+          )}
+          {activeTab === 'provider' && isHotelOwner && <HotelDashboardPanel />}
+          {activeTab === 'provider' && isVehicleOwner && <VehicleDashboardPanel />}
           {activeTab === 'admin' && isAdmin && <AdminPanel />}
           {activeTab === 'budget' && <BudgetManagerPanel />}
           {activeTab === 'messages' && <MessagesPanel />}
 
           {activeTab === 'bookings' && (
             <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4">
-              <h2 className="font-display text-xl font-bold text-[#0F172A]">
-                My Bookings &amp; Invoices ({myBookings.length})
-              </h2>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h2 className="font-display text-xl font-bold text-[#0F172A]">
+                  {isGuide ? 'My Hotel & Car Bookings' : 'My Bookings & Invoices'} ({myBookings.length})
+                </h2>
+                {isGuide && (
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onOpenMarketplaceTab ? onOpenMarketplaceTab('hotels') : onNavigatePublic('packages')
+                      }
+                      className="px-3 py-1.5 bg-[#EEF4FF] text-[#0D5EFF] text-xs font-semibold rounded-lg cursor-pointer"
+                    >
+                      + Book Hotel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onOpenMarketplaceTab ? onOpenMarketplaceTab('vehicles') : onNavigatePublic('packages')
+                      }
+                      className="px-3 py-1.5 bg-[#0D5EFF] text-white text-xs font-semibold rounded-lg cursor-pointer"
+                    >
+                      + Book Car
+                    </button>
+                  </div>
+                )}
+              </div>
               {myBookings.length === 0 ? (
                 <div className="py-8 text-center text-sm text-[#0F172A]/65">
-                  No reservations yet. Browse Tour Packages, Hotels, or Vehicles to book.
+                  {isGuide
+                    ? 'No hotel or vehicle reservations yet. Use Book Hotels or Book Cars to reserve logistics for your tours.'
+                    : 'No reservations yet. Browse Tour Packages, Hotels, or Vehicles to book.'}
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -533,9 +832,57 @@ export function DashboardView({ initialTab = 'overview', onNavigatePublic }: Das
               onSubmit={handleSaveProfile}
               className="bg-white border border-slate-200 rounded-2xl p-6 space-y-5"
             >
-              <h2 className="font-display text-xl font-bold text-[#0F172A]">
-                Personal Profile &amp; Trusted Emergency Contacts
-              </h2>
+              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4">
+                <div className="flex items-center gap-4">
+                  {pPhotoURL && !avatarFailed ? (
+                    <img
+                      src={pPhotoURL}
+                      alt={pName || 'Profile picture'}
+                      referrerPolicy="no-referrer"
+                      onError={() => setAvatarFailed(true)}
+                      className="w-16 h-16 rounded-full object-cover border-2 border-[#0D5EFF]/30"
+                    />
+                  ) : (
+                    <span className="w-16 h-16 rounded-full bg-[#0D5EFF] text-white text-lg font-bold flex items-center justify-center">
+                      {getInitials(pName || firebaseUser.displayName || 'User')}
+                    </span>
+                  )}
+                  <div>
+                    <h2 className="font-display text-xl font-bold text-[#0F172A]">
+                      Account Profile &amp; Photo
+                    </h2>
+                    <p className="text-xs text-slate-600 mt-0.5">
+                      {firebaseUser.email} · Role:{' '}
+                      <span className="font-semibold text-[#0D5EFF] capitalize">
+                        {role.replace('_', ' ')}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+                {firebaseUser.photoURL && pPhotoURL !== firebaseUser.photoURL && (
+                  <button
+                    type="button"
+                    onClick={() => setPPhotoURL(firebaseUser.photoURL || '')}
+                    className="px-3 py-1.5 text-xs font-semibold bg-[#EEF4FF] text-[#0D5EFF] rounded-lg hover:bg-blue-100 cursor-pointer"
+                  >
+                    Use Google Photo
+                  </button>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-[#0F172A]/80 mb-1">
+                  Profile Photo URL
+                </label>
+                <input
+                  type="url"
+                  value={pPhotoURL}
+                  onChange={(e) => setPPhotoURL(e.target.value)}
+                  placeholder="https://... (defaults to your Google account photo)"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg"
+                />
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-xs font-medium text-[#0F172A]/80 mb-1">

@@ -55,20 +55,37 @@ export function MarketplaceView({
     reviews,
     favorites,
     firebaseUser,
+    userProfile,
     toggleFavorite,
     createBooking,
     startOrOpenConversation,
   } = useTravelMate();
 
-  const [activeTab, setActiveTab] = useState<ServiceTab>(initialTab);
+  const role = userProfile?.role;
+  const isGuide = Boolean(firebaseUser && role === 'guide');
+  const isPartnerOwner = Boolean(firebaseUser && (role === 'hotel_owner' || role === 'vehicle_owner'));
+
+  const [activeTab, setActiveTab] = useState<ServiceTab>(
+    isGuide && (initialTab === 'packages' || initialTab === 'guides') ? 'hotels' : initialTab
+  );
   const [searchQuery, setSearchQuery] = useState('');
   const [destinationFilter, setDestinationFilter] = useState(initialDestinationFilter);
   const [maxPricePkr, setMaxPricePkr] = useState<number>(100000);
   const [verifiedOnly, setVerifiedOnly] = useState(false);
 
   useEffect(() => {
-    setActiveTab(initialTab);
-  }, [initialTab]);
+    if (isGuide && (initialTab === 'packages' || initialTab === 'guides')) {
+      setActiveTab('hotels');
+    } else {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab, isGuide]);
+
+  useEffect(() => {
+    if (isGuide && (activeTab === 'packages' || activeTab === 'guides')) {
+      setActiveTab('hotels');
+    }
+  }, [isGuide, activeTab]);
 
   useEffect(() => {
     setDestinationFilter(initialDestinationFilter || 'All');
@@ -238,16 +255,55 @@ export function MarketplaceView({
     <div className="max-w-[1440px] mx-auto px-6 py-10 space-y-8">
       <div>
         <h1 className="font-display text-3xl font-bold text-[#0F172A]">
-          {activeTab === 'guides'
-            ? 'Verified Local Tour Guides'
-            : 'Tour Packages, Stays & Local Services'}
+          {isGuide
+            ? 'Book Hotels & Vehicles for Your Tours'
+            : activeTab === 'guides'
+              ? 'Verified Local Tour Guides'
+              : 'Tour Packages, Stays & Local Services'}
         </h1>
         <p className="text-sm text-slate-600 mt-1.5 max-w-2xl">
-          {activeTab === 'guides'
-            ? 'Connect with experienced, verified Pakistan tour guides, inspect trust metrics, message directly, or hire a guide for your custom circuit.'
-            : 'Compare database-driven tour packages, verified guides, room-inventoried hotels, 4x4 vehicles, and cultural experiences with transparent PKR pricing.'}
+          {isGuide
+            ? 'Reserve room-inventoried hotels, 4x4 mountain vehicles with drivers, and local experiences for your tour groups.'
+            : activeTab === 'guides'
+              ? 'Connect with experienced, verified Pakistan tour guides, inspect trust metrics, message directly, or hire a guide for your custom circuit.'
+              : 'Compare database-driven tour packages, verified guides, room-inventoried hotels, 4x4 vehicles, and cultural experiences with transparent PKR pricing.'}
         </p>
       </div>
+
+      {isGuide && (
+        <div className="bg-[#EEF4FF] border border-[#0D5EFF]/25 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="text-xs text-[#0F172A]">
+            <span className="font-bold text-[#0D5EFF]">Tour Guide Mode:</span> Reserve hotels and cars directly for your upcoming itineraries. To publish or edit your own tour packages and accept/reject tourist requests, open <strong>Packages &amp; Requests</strong> in the top bar.
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setActiveTab('hotels')}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-lg cursor-pointer ${
+                activeTab === 'hotels' ? 'bg-[#0D5EFF] text-white' : 'bg-white text-[#0D5EFF] border border-[#0D5EFF]/30'
+              }`}
+            >
+              Book Hotels
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('vehicles')}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-lg cursor-pointer ${
+                activeTab === 'vehicles' ? 'bg-[#0D5EFF] text-white' : 'bg-white text-[#0D5EFF] border border-[#0D5EFF]/30'
+              }`}
+            >
+              Book Cars &amp; 4x4s
+            </button>
+          </div>
+        </div>
+      )}
+
+      {isPartnerOwner && (
+        <div className="bg-[#F4F7FC] border border-slate-200 rounded-2xl p-4 text-xs text-slate-700">
+          <span className="font-bold text-[#0A2351]">Partner View:</span> You are signed in as a{' '}
+          <span className="font-semibold capitalize">{role?.replace('_', ' ')}</span>. Manage your own listings and incoming customer bookings from your portal in the top menu.
+        </div>
+      )}
 
       {/* Filter & Search Bar */}
       <div className="bg-white border border-slate-200 rounded-2xl p-4 grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
@@ -304,13 +360,20 @@ export function MarketplaceView({
 
       {/* Category Tabs */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1">
-        {[
-          { id: 'packages' as const, label: `Tour Packages (${filteredPackages.length})`, icon: Sparkles },
-          { id: 'guides' as const, label: `Verified Guides (${filteredGuides.length})`, icon: UserCheck },
-          { id: 'hotels' as const, label: `Hotels & Lodges (${filteredHotels.length})`, icon: Building2 },
-          { id: 'vehicles' as const, label: `Rental Vehicles (${filteredVehicles.length})`, icon: Car },
-          { id: 'experiences' as const, label: `Local Experiences (${approvedExperiences.length})`, icon: Heart },
-        ].map((tab) => {
+        {(isGuide
+          ? [
+              { id: 'hotels' as const, label: `Hotels & Lodges (${filteredHotels.length})`, icon: Building2 },
+              { id: 'vehicles' as const, label: `Rental Vehicles (${filteredVehicles.length})`, icon: Car },
+              { id: 'experiences' as const, label: `Local Experiences (${approvedExperiences.length})`, icon: Heart },
+            ]
+          : [
+              { id: 'packages' as const, label: `Tour Packages (${filteredPackages.length})`, icon: Sparkles },
+              { id: 'guides' as const, label: `Verified Guides (${filteredGuides.length})`, icon: UserCheck },
+              { id: 'hotels' as const, label: `Hotels & Lodges (${filteredHotels.length})`, icon: Building2 },
+              { id: 'vehicles' as const, label: `Rental Vehicles (${filteredVehicles.length})`, icon: Car },
+              { id: 'experiences' as const, label: `Local Experiences (${approvedExperiences.length})`, icon: Heart },
+            ]
+        ).map((tab) => {
           const Icon = tab.icon;
           const active = activeTab === tab.id;
           return (
@@ -591,25 +654,31 @@ export function MarketplaceView({
                         <span className="font-mono text-sm font-bold text-[#0D5EFF] tabular-nums">
                           {formatPkr(room.pricePerNightPkr)}/night
                         </span>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            openBookModal({
-                              type: 'hotel',
-                              itemId: hotel.id,
-                              itemTitle: `${hotel.name} — ${room.categoryName}`,
-                              providerId: hotel.ownerId,
-                              providerName: hotel.ownerName,
-                              destinationName: hotel.destinationName,
-                              unitPricePkr: room.pricePerNightPkr,
-                              unitLabel: 'per night',
-                              roomId: room.id,
-                            })
-                          }
-                          className="px-3.5 py-1.5 bg-[#0D5EFF] text-white text-xs font-semibold rounded-lg hover:bg-[#0948CC] cursor-pointer"
-                        >
-                          Reserve Room
-                        </button>
+                        {hotel.ownerId === firebaseUser?.uid ? (
+                          <span className="px-3 py-1.5 bg-[#EEF4FF] text-[#0D5EFF] text-xs font-semibold rounded-lg">
+                            Your Property
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              openBookModal({
+                                type: 'hotel',
+                                itemId: hotel.id,
+                                itemTitle: `${hotel.name} — ${room.categoryName}`,
+                                providerId: hotel.ownerId,
+                                providerName: hotel.ownerName,
+                                destinationName: hotel.destinationName,
+                                unitPricePkr: room.pricePerNightPkr,
+                                unitLabel: 'per night',
+                                roomId: room.id,
+                              })
+                            }
+                            className="px-3.5 py-1.5 bg-[#0D5EFF] text-white text-xs font-semibold rounded-lg hover:bg-[#0948CC] cursor-pointer"
+                          >
+                            {isGuide ? 'Book for Tour' : 'Reserve Room'}
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -658,26 +727,36 @@ export function MarketplaceView({
                     {formatPkr(veh.pricePerDayPkr)} <span className="text-xs font-normal">/ day</span>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  disabled={veh.availability !== 'available'}
-                  onClick={() =>
-                    openBookModal({
-                      type: 'vehicle',
-                      itemId: veh.id,
-                      itemTitle: veh.name,
-                      providerId: veh.ownerId,
-                      providerName: veh.ownerName,
-                      destinationName: (veh.serviceLocations && veh.serviceLocations[0]) || 'Hunza Valley',
-                      unitPricePkr: veh.pricePerDayPkr,
-                      unitLabel: 'per day',
-                      supportsDriver: Boolean(veh.driverAvailable),
-                    })
-                  }
-                  className="px-4 py-2 bg-[#0D5EFF] text-white text-xs font-semibold rounded-lg hover:bg-[#0948CC] disabled:opacity-50 cursor-pointer"
-                >
-                  {veh.availability === 'available' ? 'Rent Vehicle' : veh.availability}
-                </button>
+                {veh.ownerId === firebaseUser?.uid ? (
+                  <span className="px-3 py-1.5 bg-[#EEF4FF] text-[#0D5EFF] text-xs font-semibold rounded-lg">
+                    Your Vehicle
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={veh.availability !== 'available'}
+                    onClick={() =>
+                      openBookModal({
+                        type: 'vehicle',
+                        itemId: veh.id,
+                        itemTitle: veh.name,
+                        providerId: veh.ownerId,
+                        providerName: veh.ownerName,
+                        destinationName: (veh.serviceLocations && veh.serviceLocations[0]) || 'Hunza Valley',
+                        unitPricePkr: veh.pricePerDayPkr,
+                        unitLabel: 'per day',
+                        supportsDriver: Boolean(veh.driverAvailable),
+                      })
+                    }
+                    className="px-4 py-2 bg-[#0D5EFF] text-white text-xs font-semibold rounded-lg hover:bg-[#0948CC] disabled:opacity-50 cursor-pointer"
+                  >
+                    {veh.availability === 'available'
+                      ? isGuide
+                        ? 'Book for Tour'
+                        : 'Rent Vehicle'
+                      : veh.availability}
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -735,7 +814,9 @@ export function MarketplaceView({
           <div className="bg-white rounded-2xl max-w-lg w-full border border-slate-200 shadow-xl overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-[#F4F7FC]">
               <div>
-                <div className="text-xs text-[#0B57D0] font-medium">Reservation Request</div>
+                <div className="text-xs text-[#0B57D0] font-medium">
+                  {isGuide ? 'Tour Logistics Reservation' : 'Reservation Request'}
+                </div>
                 <h3 className="font-display font-bold text-[#0F172A]">{modalTarget.itemTitle}</h3>
               </div>
               <button
@@ -866,7 +947,11 @@ export function MarketplaceView({
                   disabled={submitting}
                   className="px-5 py-2 bg-[#0D5EFF] text-white text-sm font-semibold rounded-lg hover:bg-[#0948CC] disabled:opacity-50 cursor-pointer"
                 >
-                  {submitting ? 'Submitting...' : 'Submit Booking Request'}
+                  {submitting
+                    ? 'Submitting...'
+                    : isGuide
+                      ? 'Confirm Tour Reservation'
+                      : 'Submit Booking Request'}
                 </button>
               </div>
             </form>

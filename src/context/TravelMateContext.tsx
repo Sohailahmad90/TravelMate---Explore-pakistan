@@ -121,6 +121,7 @@ interface TravelMateContextValue {
   }) => Promise<void>;
   updateProfile: (updates: {
     displayName: string;
+    photoURL?: string;
     phone: string;
     city: string;
     bio: string;
@@ -590,9 +591,11 @@ export function TravelMateProvider({ children }: { children: React.ReactNode }) 
     const uid = firebaseUser.uid;
     const cleanName = sanitizeText(updates.displayName, 100);
     const cleanBio = sanitizeText(updates.bio, 1000);
+    const cleanPhoto = sanitizeText(updates.photoURL ?? userProfile.photoURL ?? '', 500);
     try {
       await updateDoc(doc(db, 'users', uid), {
         displayName: cleanName,
+        photoURL: cleanPhoto,
         phone: sanitizeText(updates.phone, 30),
         city: sanitizeText(updates.city, 80),
         bio: cleanBio,

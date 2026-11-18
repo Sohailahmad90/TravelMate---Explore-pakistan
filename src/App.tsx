@@ -2,7 +2,12 @@ import React, { useState } from 'react';
 import { Check, Compass, Copy, ExternalLink, ShieldCheck, UserCheck, X } from 'lucide-react';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { TravelMateProvider, useTravelMate } from './context/TravelMateContext';
-import { Navbar, type AppRoute, type AuthModalTab } from './components/Navbar';
+import {
+  Navbar,
+  type AppRoute,
+  type AuthModalTab,
+  type DashboardQuickTab,
+} from './components/Navbar';
 import { Footer } from './components/Footer';
 import { OnboardingModal } from './components/OnboardingModal';
 import { HomeView } from './components/HomeView';
@@ -26,7 +31,7 @@ function TravelMateShell() {
   const [selectedDestId, setSelectedDestId] = useState<string | null>(null);
   const [marketplaceInitialTab, setMarketplaceInitialTab] = useState<ServiceTab>('packages');
   const [marketplaceDestFilter, setMarketplaceDestFilter] = useState<string>('All');
-  const [dashboardInitialTab, setDashboardInitialTab] = useState<'overview' | 'messages'>('overview');
+  const [dashboardInitialTab, setDashboardInitialTab] = useState<DashboardQuickTab>('overview');
 
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authTab, setAuthTab] = useState<AuthModalTab>('signin');
@@ -115,6 +120,8 @@ function TravelMateShell() {
     <div className="min-h-screen flex flex-col bg-[#F4F7FC] text-[#0F172A]">
       <Navbar
         currentRoute={route}
+        activeMarketplaceTab={marketplaceInitialTab}
+        activeDashboardTab={dashboardInitialTab}
         onNavigate={(r) => {
           setDashboardInitialTab('overview');
           if (r === 'guides') {
@@ -125,6 +132,15 @@ function TravelMateShell() {
             setMarketplaceDestFilter('All');
           }
           navigateTo(r);
+        }}
+        onOpenMarketplaceTab={(tab) => {
+          setMarketplaceInitialTab(tab);
+          setMarketplaceDestFilter('All');
+          navigateTo(tab === 'guides' ? 'guides' : 'packages');
+        }}
+        onOpenDashboardTab={(tab) => {
+          setDashboardInitialTab(tab);
+          navigateTo('dashboard');
         }}
         onOpenAuthModal={openAuthModal}
       />
@@ -212,6 +228,11 @@ function TravelMateShell() {
             key={dashboardInitialTab}
             initialTab={dashboardInitialTab}
             onNavigatePublic={navigateTo}
+            onOpenMarketplaceTab={(tab) => {
+              setMarketplaceInitialTab(tab);
+              setMarketplaceDestFilter('All');
+              navigateTo(tab === 'guides' ? 'guides' : 'packages');
+            }}
           />
         )}
       </div>

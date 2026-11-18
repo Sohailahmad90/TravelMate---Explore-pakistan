@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Check, Plus, ShieldCheck, Trash2, X } from 'lucide-react';
+import { Building2, Car, Check, Pencil, Plus, ShieldCheck, Trash2, X } from 'lucide-react';
 import { useTravelMate } from '../../context/TravelMateContext';
 import { formatPkr } from '../../lib/formatters';
-import type { UserRole, Vehicle } from '../../types/travelmate';
+import type { TourPackage, UserRole, Vehicle } from '../../types/travelmate';
 
 export function ProviderVerificationCard({ role }: { role: Exclude<UserRole, 'tourist' | 'admin'> }) {
   const { userProfile, verificationRequests, destinations, submitVerificationRequest } = useTravelMate();
@@ -112,7 +112,12 @@ export function ProviderVerificationCard({ role }: { role: Exclude<UserRole, 'to
   );
 }
 
-export function GuideDashboardPanel() {
+interface GuideDashboardPanelProps {
+  onBookHotels?: () => void;
+  onBookCars?: () => void;
+}
+
+export function GuideDashboardPanel({ onBookHotels, onBookCars }: GuideDashboardPanelProps) {
   const {
     userProfile,
     destinations,
@@ -134,8 +139,14 @@ export function GuideDashboardPanel() {
   const [expTitle, setExpTitle] = useState('');
   const [expPrice, setExpPrice] = useState(3500);
 
+  const [editingPkgId, setEditingPkgId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editPrice, setEditPrice] = useState(0);
+  const [editDays, setEditDays] = useState(1);
+
   const myPackages = tourPackages.filter((p) => p.guideId === userProfile?.uid);
   const myBookings = bookings.filter((b) => b.providerId === userProfile?.uid);
+  const pendingCount = myBookings.filter((b) => b.status === 'pending').length;
   const earningsPkr = myBookings
     .filter((b) => b.status === 'confirmed' || b.status === 'completed')
     .reduce((sum, b) => sum + b.totalPricePkr, 0);
@@ -159,6 +170,23 @@ export function GuideDashboardPanel() {
     setDesc('');
   };
 
+  const startEditPkg = (p: TourPackage) => {
+    setEditingPkgId(p.id);
+    setEditTitle(p.title);
+    setEditPrice(p.pricePerPersonPkr);
+    setEditDays(p.durationDays);
+  };
+
+  const saveEditPkg = async (pkgId: string) => {
+    if (!editTitle.trim()) return;
+    await updatePackage(pkgId, {
+      title: editTitle.trim(),
+      pricePerPersonPkr: Math.max(1000, editPrice),
+      durationDays: Math.min(60, Math.max(1, editDays)),
+    });
+    setEditingPkgId(null);
+  };
+
   const handleSubmitExp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!expTitle.trim()) return;
@@ -176,6 +204,40 @@ export function GuideDashboardPanel() {
 
   return (
     <div className="space-y-6">
+      {/* Quick Guide Operations Bar */}
+      {(onBookHotels || onBookCars) && (
+        <div className="bg-gradient-to-r from-[#0A2351] to-[#0D5EFF] text-white rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <div className="font-display font-bold text-lg">Tour Guide Operations</div>
+            <p className="text-xs text-blue-100/85 mt-0.5">
+              Post &amp; manage your tour packages, accept/reject tourist requests, and reserve hotels or 4x4 vehicles for your groups.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2.5">
+            {onBookHotels && (
+              <button
+                type="button"
+                onClick={onBookHotels}
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-white text-[#0A2351] text-xs font-bold rounded-xl hover:bg-[#EEF4FF] cursor-pointer"
+              >
+                <Building2 className="w-3.5 h-3.5 text-[#0D5EFF]" />
+                <span>Book Hotels</span>
+              </button>
+            )}
+            {onBookCars && (
+              <button
+                type="button"
+                onClick={onBookCars}
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#FF6B2C] text-white text-xs font-bold rounded-xl hover:bg-[#e85d22] cursor-pointer"
+              >
+                <Car className="w-3.5 h-3.5" />
+                <span>Book Cars &amp; 4x4s</span>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white border border-slate-200 rounded-xl p-5">
           <div className="text-xs text-[#0F172A]/60">My Tour Packages</div>
@@ -184,7 +246,7 @@ export function GuideDashboardPanel() {
           </div>
         </div>
         <div className="bg-white border border-slate-200 rounded-xl p-5">
-          <div className="text-xs text-[#0F172A]/60">Incoming Requests</div>
+          <div className="text-xs text-[#0F172A]/60">Incoming Requests ({pendingCount} pending)</div>
           <div className="font-mono text-2xl font-bold text-[#0D5EFF] tabular-nums mt-1">
             {myBookings.length}
           </div>
@@ -278,41 +340,95 @@ export function GuideDashboardPanel() {
           <p className="text-xs text-[#0F172A]/65">No packages published under your guide account yet.</p>
         ) : (
           <div className="space-y-2.5">
-            {myPackages.map((p) => (
-              <div
-                key={p.id}
-                className="border border-slate-200 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-3"
-              >
-                <div>
-                  <div className="font-semibold text-sm text-[#0F172A]">{p.title}</div>
-                  <div className="text-xs text-[#0F172A]/65 font-mono tabular-nums">
-                    {p.destinationName} · {p.durationDays} Days · {formatPkr(p.pricePerPersonPkr)}
-                  </div>
+            {myPackages.map((p) => {
+              const isEditing = editingPkgId === p.id;
+              return (
+                <div
+                  key={p.id}
+                  className="border border-slate-200 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-3"
+                >
+                  {isEditing ? (
+                    <div className="flex-1 flex flex-wrap items-center gap-2">
+                      <input
+                        type="text"
+                        value={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                        className="flex-1 min-w-[180px] px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg"
+                      />
+                      <input
+                        type="number"
+                        min={1000}
+                        value={editPrice}
+                        onChange={(e) => setEditPrice(Number(e.target.value))}
+                        className="w-28 px-2.5 py-1.5 text-xs font-mono border border-slate-200 rounded-lg"
+                      />
+                      <input
+                        type="number"
+                        min={1}
+                        max={30}
+                        value={editDays}
+                        onChange={(e) => setEditDays(Number(e.target.value))}
+                        className="w-16 px-2.5 py-1.5 text-xs font-mono border border-slate-200 rounded-lg"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => void saveEditPkg(p.id)}
+                        className="px-3 py-1.5 bg-[#0D5EFF] text-white text-xs font-semibold rounded-lg cursor-pointer"
+                      >
+                        Save
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditingPkgId(null)}
+                        className="px-2.5 py-1.5 border border-slate-200 text-xs rounded-lg cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div>
+                        <div className="font-semibold text-sm text-[#0F172A]">{p.title}</div>
+                        <div className="text-xs text-[#0F172A]/65 font-mono tabular-nums">
+                          {p.destinationName} · {p.durationDays} Days · {formatPkr(p.pricePerPersonPkr)}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={p.availability}
+                          onChange={(e) =>
+                            void updatePackage(p.id, {
+                              availability: e.target.value as 'available' | 'paused' | 'sold_out',
+                            })
+                          }
+                          className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg"
+                        >
+                          <option value="available">Available</option>
+                          <option value="paused">Paused</option>
+                          <option value="sold_out">Sold Out</option>
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => startEditPkg(p)}
+                          title="Edit package"
+                          className="p-2 text-[#0D5EFF] hover:bg-[#EEF4FF] rounded-lg cursor-pointer"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void deletePackage(p.id)}
+                          title="Delete package"
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg cursor-pointer"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
-                <div className="flex items-center gap-2">
-                  <select
-                    value={p.availability}
-                    onChange={(e) =>
-                      void updatePackage(p.id, {
-                        availability: e.target.value as 'available' | 'paused' | 'sold_out',
-                      })
-                    }
-                    className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg"
-                  >
-                    <option value="available">Available</option>
-                    <option value="paused">Paused</option>
-                    <option value="sold_out">Sold Out</option>
-                  </select>
-                  <button
-                    type="button"
-                    onClick={() => void deletePackage(p.id)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg cursor-pointer"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
