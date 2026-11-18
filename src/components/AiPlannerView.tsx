@@ -113,6 +113,82 @@ export function AiPlannerView({
     );
   };
 
+  const buildEditableStaticTemplate = (): GeneratedPlanPayload => {
+    const destObj = destinations.find((d) => d.name.toLowerCase() === destination.toLowerCase());
+    const startMs = startDate ? new Date(startDate).getTime() : Date.now();
+    const endMs = endDate ? new Date(endDate).getTime() : startMs + 4 * 86400000;
+    const daysCount = Math.min(10, Math.max(1, Math.round((endMs - startMs) / 86400000) + 1 || 5));
+    const perDayBudget = Math.round(budgetPkr / daysCount);
+    const highlights = destObj?.highlights || ['Scenic Overlook', 'Local Bazaar', 'Valley Walk'];
+    const activities = destObj?.activities || ['Sightseeing', 'Photography', 'Local Cuisine'];
+
+    const days: ItineraryDay[] = Array.from({ length: daysCount }).map((_, idx) => {
+      const h1 = highlights[idx % highlights.length];
+      const a1 = activities[idx % activities.length];
+      return {
+        dayNumber: idx + 1,
+        title:
+          idx === 0
+            ? `Departure from ${startingLocation} & Arrival in ${destination}`
+            : idx === daysCount - 1
+              ? `Morning Local Exploration & Return to ${startingLocation}`
+              : `${destination}: ${h1} & ${a1}`,
+        morning:
+          idx === 0
+            ? `Depart ${startingLocation} early morning via ${transportPref} toward ${destination}.`
+            : `Breakfast at ${accommodationPref} followed by ${a1.toLowerCase()} around ${h1}.`,
+        afternoon:
+          idx === daysCount - 1
+            ? `Check out, stop for regional handicrafts, and begin return drive to ${startingLocation}.`
+            : `Explore ${highlights[(idx + 1) % highlights.length]} with lunch at a local mountain cafe.`,
+        evening:
+          idx === daysCount - 1
+            ? `Arrive back in ${startingLocation} and wrap up trip expenses.`
+            : `Sunset views, dinner, and next-day weather briefing in ${destination}.`,
+        attractions: [h1, highlights[(idx + 1) % highlights.length]],
+        estimatedDayCostPkr: perDayBudget,
+      };
+    });
+
+    const trans = Math.round(budgetPkr * 0.3);
+    const accom = Math.round(budgetPkr * 0.35);
+    const food = Math.round(budgetPkr * 0.18);
+    const act = Math.round(budgetPkr * 0.1);
+    const misc = Math.max(0, budgetPkr - trans - accom - food - act);
+
+    return {
+      title: `${daysCount}-Day ${destination} Custom Itinerary`,
+      recommendedDurationDays: daysCount,
+      destinationSummary:
+        destObj?.description ||
+        `Editable ${daysCount}-day travel itinerary from ${startingLocation} to ${destination} tailored to your PKR budget.`,
+      safetyAndSeasonNote: `Best season: ${destObj?.bestSeason || 'April to October'}. Always check Open-Meteo mountain weather and NHA advisories before mountain travel.`,
+      budgetBreakdown: {
+        transportationPkr: trans,
+        accommodationPkr: accom,
+        foodPkr: food,
+        activitiesPkr: act,
+        miscellaneousPkr: misc,
+        totalEstimatedPkr: budgetPkr,
+      },
+      days,
+      alternativeOptions: [
+        {
+          label: 'Economy Group Plan',
+          estimatedBudgetPkr: Math.round(budgetPkr * 0.8),
+          summary: 'Shared coaster transport and standard guesthouse stays.',
+        },
+        {
+          label: 'Comfort Private 4x4 Plan',
+          estimatedBudgetPkr: Math.round(budgetPkr * 1.25),
+          summary: 'Private SUV with dedicated driver and deluxe mountain lodge.',
+        },
+      ],
+      disclaimer:
+        'Editable destination template generated locally (static hosting mode — deploy Express backend with GEMINI_API_KEY for live Gemini AI generation).',
+    };
+  };
+
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
     setGenerating(true);
@@ -137,6 +213,16 @@ export function AiPlannerView({
           specialRequirements,
         }),
       });
+      const contentType = resp.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        // Static hosting (e.g. GitHub Pages) has no Express /api/* backend
+        setPlan(buildEditableStaticTemplate());
+        setRevisions([]);
+        setStatusMessage(
+          'Loaded an editable itinerary template (static hosting mode). Customize any day below and save to your account.'
+        );
+        return;
+      }
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.error || 'Failed to generate AI itinerary.');
       setPlan(data);
@@ -275,6 +361,27 @@ export function AiPlannerView({
           lng: destObj?.lng,
         }),
       });
+      const contentType = resp.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        const currentDay =
+          plan.days.find((d) => d.dayNumber === replanDay) || plan.days[0];
+        setProposal({
+          weatherAssessment: `Static hosting mode: reviewing safer lower-altitude fallback options for ${disruptionReason}.`,
+          affectedActivities: currentDay?.attractions || ['High-altitude excursion'],
+          proposedDayPlan: {
+            dayNumber: replanDay,
+            title: `Day ${replanDay}: Safer Low-Altitude & Cultural Alternative in ${destination}`,
+            morning: `Wait out morning weather at your lodge and visit sheltered local bazaar or heritage museum in ${destination}.`,
+            afternoon: `Short accessible valley viewpoint stop (weather permitting) and local culinary tasting.`,
+            evening: `Indoor evening dinner and updated next-day route confirmation with your local guide.`,
+            attractions: ['Local Heritage Museum', 'Sheltered Valley Cafe', 'Artisan Bazaar'],
+            estimatedDayCostPkr: currentDay?.estimatedDayCostPkr || Math.round(budgetPkr / Math.max(1, plan.days.length)),
+          },
+          budgetDeltaPkr: 0,
+          guideNotificationNote: `Proposed indoor/low-altitude fallback for Day ${replanDay} due to: ${disruptionReason}.`,
+        });
+        return;
+      }
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.error || 'Failed to generate re-plan proposal.');
       setProposal(data);

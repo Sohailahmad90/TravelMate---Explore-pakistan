@@ -21,6 +21,7 @@ export type ServiceTab = 'packages' | 'guides' | 'hotels' | 'vehicles' | 'experi
 
 interface MarketplaceViewProps {
   initialTab?: ServiceTab;
+  initialDestinationFilter?: string;
   onRequireSignIn: () => void;
   onOpenMessages: () => void;
 }
@@ -38,7 +39,12 @@ interface BookingModalTarget {
   supportsDriver?: boolean;
 }
 
-export function MarketplaceView({ initialTab = 'packages', onRequireSignIn, onOpenMessages }: MarketplaceViewProps) {
+export function MarketplaceView({
+  initialTab = 'packages',
+  initialDestinationFilter = 'All',
+  onRequireSignIn,
+  onOpenMessages,
+}: MarketplaceViewProps) {
   const {
     tourPackages,
     publicProfiles,
@@ -56,13 +62,17 @@ export function MarketplaceView({ initialTab = 'packages', onRequireSignIn, onOp
 
   const [activeTab, setActiveTab] = useState<ServiceTab>(initialTab);
   const [searchQuery, setSearchQuery] = useState('');
-  const [destinationFilter, setDestinationFilter] = useState('All');
+  const [destinationFilter, setDestinationFilter] = useState(initialDestinationFilter);
   const [maxPricePkr, setMaxPricePkr] = useState<number>(100000);
   const [verifiedOnly, setVerifiedOnly] = useState(false);
 
   useEffect(() => {
     setActiveTab(initialTab);
   }, [initialTab]);
+
+  useEffect(() => {
+    setDestinationFilter(initialDestinationFilter || 'All');
+  }, [initialDestinationFilter]);
 
   // Booking Modal State
   const [modalTarget, setModalTarget] = useState<BookingModalTarget | null>(null);

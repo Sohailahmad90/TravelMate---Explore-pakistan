@@ -21,7 +21,9 @@ import {
   db,
   handleFirestoreError,
   OperationType,
+  resolveGoogleRedirectResult,
   signInWithGoogle,
+  signInWithGoogleRedirect,
   signOutUser,
 } from '../lib/firebase';
 import {
@@ -101,6 +103,7 @@ interface TravelMateContextValue {
   emergencyEvents: EmergencyEvent[];
   allUsers: UserProfile[];
   signIn: () => Promise<void>;
+  signInWithRedirect: () => Promise<void>;
   signOut: () => Promise<void>;
   setPendingSignupDraft: (draft: {
     role: Exclude<UserRole, 'admin'>;
@@ -164,16 +167,36 @@ export function TravelMateProvider({ children }: { children: React.ReactNode }) 
   const [authReady, setAuthReady] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
+  const DRAFT_STORAGE_KEY = 'travelmate_pending_signup_draft';
+
+  const readStoredDraft = () => {
+    try {
+      const raw = sessionStorage.getItem(DRAFT_STORAGE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  };
+
   const pendingSignupDraftRef = useRef<{
     role: Exclude<UserRole, 'admin'>;
     displayName?: string;
     phone?: string;
     city?: string;
     bio?: string;
-  } | null>(null);
+  } | null>(readStoredDraft());
 
   const setPendingSignupDraft: TravelMateContextValue['setPendingSignupDraft'] = (draft) => {
     pendingSignupDraftRef.current = draft;
+    try {
+      if (draft) {
+        sessionStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
+      } else {
+        sessionStorage.removeItem(DRAFT_STORAGE_KEY);
+      }
+    } catch {
+      // ignore storage errors in restricted contexts
+    }
   };
 
   const [liveDestinations, setLiveDestinations] = useState<Destination[]>([]);
@@ -207,6 +230,7 @@ export function TravelMateProvider({ children }: { children: React.ReactNode }) 
   }, [firebaseUser, userProfile]);
 
   useEffect(() => {
+    void resolveGoogleRedirectResult();
     const unsub = onAuthStateChanged(auth, (user) => {
       setFirebaseUser(user);
       setAuthReady(true);
@@ -261,7 +285,7 @@ export function TravelMateProvider({ children }: { children: React.ReactNode }) 
           }
         } else if (pendingSignupDraftRef.current) {
           const draft = pendingSignupDraftRef.current;
-          pendingSignupDraftRef.current = null;
+          setPendingSignupDraft(null);
           const uid = firebaseUser.uid;
           const cleanName = sanitizeText(draft.displayName || firebaseUser.displayName || 'TravelMate User', 100);
           const cleanPhone = sanitizeText(draft.phone || '', 30);
@@ -505,6 +529,10 @@ export function TravelMateProvider({ children }: { children: React.ReactNode }) 
 
   const signIn = async () => {
     await signInWithGoogle();
+  };
+
+  const signInWithRedirect = async () => {
+    await signInWithGoogleRedirect();
   };
 
   const signOut = async () => {
@@ -1332,6 +1360,7 @@ export function TravelMateProvider({ children }: { children: React.ReactNode }) 
     emergencyEvents,
     allUsers,
     signIn,
+    signInWithRedirect,
     signOut,
     setPendingSignupDraft,
     completeOnboarding,

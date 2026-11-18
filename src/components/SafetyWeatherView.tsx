@@ -9,6 +9,7 @@ import {
   Wind,
 } from 'lucide-react';
 import { useTravelMate } from '../context/TravelMateContext';
+import { fetchWeatherForCoords } from '../lib/weather';
 import type { TravelAdvisory, WeatherData } from '../types/travelmate';
 
 interface SafetyWeatherViewProps {
@@ -58,10 +59,9 @@ export function SafetyWeatherView({ onRequireSignIn }: SafetyWeatherViewProps) {
     if (!selectedDest) return;
     let active = true;
     setWeatherLoading(true);
-    fetch(`/api/weather?lat=${selectedDest.lat}&lng=${selectedDest.lng}`)
-      .then((r) => (r.ok ? r.json() : null))
+    fetchWeatherForCoords(selectedDest.lat, selectedDest.lng)
       .then((data) => {
-        if (active && data && data.current) setWeather(data);
+        if (active) setWeather(data);
       })
       .catch(() => {
         if (active) setWeather(null);
