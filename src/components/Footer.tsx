@@ -8,7 +8,7 @@ interface FooterProps {
 
 export function Footer({ onNavigate }: FooterProps) {
   return (
-    <footer className="bg-[#08245E] text-white mt-20 no-print">
+    <footer className="bg-gradient-to-b from-[#071D49] to-[#04112E] text-white mt-20 no-print">
       <div className="max-w-[1440px] mx-auto px-6 py-14 grid grid-cols-1 md:grid-cols-4 gap-10">
         <div className="md:col-span-1">
           <div className="inline-flex items-center gap-2 font-display text-xl font-bold tracking-tight mb-3">

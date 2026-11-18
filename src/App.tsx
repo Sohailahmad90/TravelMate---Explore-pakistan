@@ -158,6 +158,11 @@ function TravelMateShell() {
               }
               navigateTo(r);
             }}
+            onOpenMarketplaceTab={(tab) => {
+              setMarketplaceInitialTab(tab);
+              setMarketplaceDestFilter('All');
+              navigateTo(tab === 'guides' ? 'guides' : 'packages');
+            }}
             onSelectDestinationForPlanner={(destName) => {
               setPlannerDestination(destName);
               navigateTo('ai-planner');

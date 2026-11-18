@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import {
   ArrowRight,
+  Building2,
   Calendar,
+  Car,
   Compass,
   Headphones,
   Hotel,
@@ -19,18 +21,21 @@ import { HERO_IMAGE } from '../data/seedData';
 import { useTravelMate } from '../context/TravelMateContext';
 import { formatPkr } from '../lib/formatters';
 import type { AppRoute, AuthModalTab } from './Navbar';
+import type { ServiceTab } from './MarketplaceView';
 
 interface HomeViewProps {
   onNavigate: (route: AppRoute) => void;
+  onOpenMarketplaceTab?: (tab: ServiceTab) => void;
   onSelectDestinationForPlanner: (destName: string) => void;
   onSelectDestinationDetail: (destId: string) => void;
   onOpenAuthModal: (tab?: AuthModalTab) => void;
 }
 
-type HeroSearchTab = 'destinations' | 'guides' | 'packages' | 'ai-planner';
+type HeroSearchTab = 'destinations' | 'guides' | 'packages' | 'hotels' | 'vehicles' | 'ai-planner';
 
 export function HomeView({
   onNavigate,
+  onOpenMarketplaceTab,
   onSelectDestinationForPlanner,
   onSelectDestinationDetail,
   onOpenAuthModal,
@@ -64,6 +69,14 @@ export function HomeView({
       onNavigate('destinations');
       return;
     }
+    if (searchTab === 'hotels' || searchTab === 'vehicles' || searchTab === 'packages') {
+      if (onOpenMarketplaceTab) {
+        onOpenMarketplaceTab(searchTab);
+      } else {
+        onNavigate('packages');
+      }
+      return;
+    }
     onNavigate(searchTab);
   };
 
@@ -78,7 +91,7 @@ export function HomeView({
             referrerPolicy="no-referrer"
             className="absolute inset-0 w-full h-full object-cover object-center"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#F4F7FC]/95 via-[#F4F7FC]/78 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#F4F7FC]/95 via-[#EBF3FF]/82 to-[#06183D]/25" />
 
           <div className="relative z-10 max-w-[1440px] mx-auto px-6 w-full py-16 pb-24">
             <div className="max-w-xl">
@@ -86,7 +99,7 @@ export function HomeView({
                 Smart Pakistan Tourism &amp; Verified Local Travel
               </p>
               <h1
-                className="font-display font-extrabold tracking-tight text-[#0A2351] leading-[1.08] mb-4"
+                className="font-display font-extrabold tracking-tight text-[#08245E] leading-[1.08] mb-4"
                 style={{ fontSize: 'clamp(2.3rem, 4.1vw, 3.75rem)', textWrap: 'balance' }}
               >
                 Explore Pakistan{' '}
@@ -95,15 +108,15 @@ export function HomeView({
                 </span>
               </h1>
               <p className="text-sm sm:text-base text-slate-700 leading-relaxed mb-7 max-w-md">
-                Discover northern valleys, verified tour guides, curated packages, and AI-calibrated
-                PKR itineraries built for safer mountain journeys.
+                Discover northern valleys, verified tour guides, hotels, 4x4 vehicles, and
+                AI-calibrated PKR itineraries built for safer mountain journeys.
               </p>
 
               <div className="flex flex-wrap items-center gap-3.5 mb-7">
                 <button
                   type="button"
                   onClick={() => onNavigate('destinations')}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#0D5EFF] text-white text-sm font-semibold rounded-xl hover:bg-[#0948CC] transition-colors whitespace-nowrap shrink-0 shadow-sm cursor-pointer"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#0D5EFF] to-[#0284C7] text-white text-sm font-semibold rounded-xl hover:from-[#0948CC] hover:to-[#0369A1] transition-all whitespace-nowrap shrink-0 shadow-[0_12px_24px_-8px_rgba(13,94,255,0.5)] cursor-pointer"
                 >
                   <span>Explore Destinations</span>
                   <ArrowRight className="w-4 h-4" />
@@ -111,7 +124,7 @@ export function HomeView({
                 <button
                   type="button"
                   onClick={() => onNavigate('packages')}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-white text-[#0A2351] border border-slate-200 text-sm font-semibold rounded-xl hover:bg-[#EEF4FF] transition-colors whitespace-nowrap shrink-0 shadow-sm cursor-pointer"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-white/90 backdrop-blur-sm text-[#08245E] border border-blue-200/80 text-sm font-semibold rounded-xl hover:bg-[#EEF4FF] transition-colors whitespace-nowrap shrink-0 shadow-sm cursor-pointer"
                 >
                   View Packages
                 </button>
@@ -122,22 +135,24 @@ export function HomeView({
                 <span aria-hidden="true">·</span>
                 <span>Verified Tour Guides</span>
                 <span aria-hidden="true">·</span>
-                <span>PKR Budget Estimates</span>
+                <span>Hotels &amp; 4x4 Rentals</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Overlapping White Search & Trip Bar */}
+        {/* Overlapping Frosted Search & Trip Bar */}
         <div className="max-w-[1200px] mx-auto px-6 -mt-12 relative z-20">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-xl p-5">
+          <div className="bg-white/95 backdrop-blur-md rounded-2xl border border-blue-100 shadow-[0_24px_48px_-16px_rgba(8,36,94,0.18)] p-5">
             {/* Interactive Tabs */}
-            <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3.5 mb-4">
+            <div className="flex flex-wrap items-center gap-2 border-b border-slate-200/80 pb-3.5 mb-4">
               {[
                 { id: 'destinations' as const, label: 'Destinations', icon: MapPin, color: 'text-[#0D5EFF]' },
                 { id: 'guides' as const, label: 'Guides', icon: UserCheck, color: 'text-emerald-600' },
                 { id: 'packages' as const, label: 'Packages', icon: Package, color: 'text-[#FF6B2C]' },
-                { id: 'ai-planner' as const, label: 'Trip Planner', icon: Sparkles, color: 'text-indigo-600' },
+                { id: 'hotels' as const, label: 'Hotels', icon: Building2, color: 'text-sky-600' },
+                { id: 'vehicles' as const, label: 'Vehicles', icon: Car, color: 'text-cyan-700' },
+                { id: 'ai-planner' as const, label: 'Trip Planner', icon: Sparkles, color: 'text-blue-700' },
               ].map((tab) => {
                 const Icon = tab.icon;
                 const active = searchTab === tab.id;
@@ -148,7 +163,7 @@ export function HomeView({
                     onClick={() => setSearchTab(tab.id)}
                     className={`inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                       active
-                        ? 'bg-[#EEF4FF] text-[#0D5EFF]'
+                        ? 'bg-gradient-to-r from-[#EEF4FF] to-[#E0F2FE] text-[#0D5EFF]'
                         : 'text-slate-600 hover:bg-slate-50'
                     }`}
                   >
@@ -222,7 +237,7 @@ export function HomeView({
               <div className="lg:col-span-2">
                 <button
                   type="submit"
-                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#0D5EFF] text-white text-sm font-semibold rounded-xl hover:bg-[#0948CC] transition-colors cursor-pointer"
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#0D5EFF] to-[#0284C7] text-white text-sm font-semibold rounded-xl hover:from-[#0948CC] hover:to-[#0369A1] transition-all shadow-[0_8px_20px_-8px_rgba(13,94,255,0.55)] cursor-pointer"
                 >
                   <Search className="w-4 h-4" />
                   <span>{searchTab === 'ai-planner' ? 'Plan Trip' : 'Search Now'}</span>
@@ -260,7 +275,7 @@ export function HomeView({
               key={dest.id}
               type="button"
               onClick={() => onSelectDestinationDetail(dest.id)}
-              className="group relative rounded-2xl overflow-hidden aspect-[3/4] text-left bg-[#0A2351] shadow-sm cursor-pointer"
+              className="group relative rounded-2xl overflow-hidden aspect-[3/4] text-left bg-[#0A2351] shadow-[0_14px_28px_-14px_rgba(8,36,94,0.35)] cool-card cursor-pointer"
             >
               <img
                 src={dest.imageUrl || HERO_IMAGE}
@@ -268,9 +283,9 @@ export function HomeView({
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-300"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#04112E]/90 via-[#08245E]/25 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 p-4 text-white space-y-1">
-                <div className="text-[11px] text-blue-200 font-medium">{dest.region}</div>
+                <div className="text-[11px] text-sky-200 font-medium">{dest.region}</div>
                 <h3 className="font-display text-lg font-bold leading-snug">{dest.name}</h3>
                 <div className="text-xs text-white/90 font-mono tabular-nums">
                   Starting from {formatPkr(dest.estimatedBudgetPkr)}
@@ -278,7 +293,7 @@ export function HomeView({
                 <div className="flex items-center gap-1 text-xs text-amber-400 pt-0.5 font-mono tabular-nums">
                   <Star className="w-3.5 h-3.5 fill-amber-400" />
                   <span className="text-white font-semibold">4.9</span>
-                  <span className="text-white/70">· {dest.bestSeason}</span>
+                  <span className="text-white/75">· {dest.bestSeason}</span>
                 </div>
               </div>
             </button>
@@ -289,10 +304,10 @@ export function HomeView({
       {/* 3. Top Packages & AI Deals (Reference Asymmetric Row) */}
       <section className="max-w-[1440px] mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-          {/* Left Blue/Navy Promo Card */}
-          <div className="lg:col-span-4 rounded-2xl bg-gradient-to-br from-[#0A2351] via-[#0D47A1] to-[#0D5EFF] text-white p-8 flex flex-col justify-between">
+          {/* Left Cool Alpine-Azure Promo Card */}
+          <div className="lg:col-span-4 rounded-2xl bg-gradient-to-br from-[#06183D] via-[#0B46B5] to-[#0EA5E9] border border-white/15 text-white p-8 flex flex-col justify-between shadow-[0_20px_40px_-18px_rgba(13,94,255,0.45)]">
             <div>
-              <p className="text-xs font-semibold text-blue-200 mb-2">Verified Partner Deals</p>
+              <p className="text-xs font-semibold text-sky-200 mb-2">Verified Partner Deals</p>
               <h2 className="font-display text-3xl font-extrabold leading-tight mb-3">
                 Top Trips This Season
               </h2>
@@ -305,7 +320,7 @@ export function HomeView({
               <button
                 type="button"
                 onClick={() => onNavigate('packages')}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-[#0A2351] text-sm font-semibold rounded-xl hover:bg-[#EEF4FF] transition-colors cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-[#08245E] text-sm font-semibold rounded-xl hover:bg-[#EEF4FF] transition-colors shadow-sm cursor-pointer"
               >
                 <span>Explore Packages</span>
                 <ArrowRight className="w-4 h-4" />
@@ -318,7 +333,7 @@ export function HomeView({
             {featuredPackages.map((pkg) => (
               <div
                 key={pkg.id}
-                className="bg-white border border-slate-200 rounded-2xl overflow-hidden flex flex-col justify-between"
+                className="bg-white border border-slate-200/90 rounded-2xl overflow-hidden flex flex-col justify-between cool-card"
               >
                 <div>
                   <div className="aspect-[4/3] bg-[#EEF4FF] overflow-hidden">
@@ -397,7 +412,7 @@ export function HomeView({
             return (
               <div
                 key={item.title}
-                className="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-3.5"
+                className="bg-white border border-slate-200/90 rounded-xl p-4 flex items-center gap-3.5 cool-card"
               >
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${item.bg}`}>
                   <Icon className="w-5 h-5" />
@@ -439,7 +454,7 @@ export function HomeView({
           {featuredGuides.map((guide) => (
             <div
               key={guide.uid}
-              className="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col justify-between space-y-4"
+              className="bg-white border border-slate-200/90 rounded-2xl p-5 flex flex-col justify-between space-y-4 cool-card"
             >
               <div>
                 <div className="flex items-start justify-between gap-3 mb-2">
@@ -504,7 +519,7 @@ export function HomeView({
             ].map((t) => (
               <div
                 key={t.name}
-                className="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col justify-between"
+                className="bg-white border border-slate-200/90 rounded-2xl p-5 flex flex-col justify-between cool-card"
               >
                 <div>
                   <div className="text-2xl font-display font-bold text-[#0D5EFF] leading-none mb-2">
@@ -527,7 +542,7 @@ export function HomeView({
             ))}
           </div>
 
-          <div className="lg:col-span-4 rounded-2xl bg-gradient-to-br from-[#0D5EFF] to-[#08245E] text-white p-7 flex flex-col justify-between">
+          <div className="lg:col-span-4 rounded-2xl bg-gradient-to-br from-[#06183D] via-[#0B46B5] to-[#0284C7] border border-white/15 text-white p-7 flex flex-col justify-between shadow-[0_20px_40px_-18px_rgba(13,94,255,0.4)]">
             <div>
               <div className="inline-flex items-center gap-2 text-xs font-semibold text-blue-200 mb-2">
                 <Compass className="w-4 h-4" />

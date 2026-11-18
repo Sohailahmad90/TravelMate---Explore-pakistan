@@ -60,8 +60,8 @@ function getInitials(name: string): string {
 }
 
 function getRoleLabel(role?: string, isAdmin?: boolean): string {
-  if (isAdmin || role === 'admin') return 'Administrator';
-  if (role === 'guide') return 'Tour Guide';
+  if (isAdmin || role === 'admin') return 'Admin';
+  if (role === 'guide') return 'Guide';
   if (role === 'hotel_owner') return 'Hotel Owner';
   if (role === 'vehicle_owner') return 'Vehicle Owner';
   return 'Tourist';
@@ -109,7 +109,9 @@ export function Navbar({
     };
   }, []);
 
-  // Build role-appropriate primary navigation links
+  const isMarketplaceRoute = currentRoute === 'packages' || currentRoute === 'marketplace';
+
+  // Role-aware primary navigation links (includes Hotels & Vehicles; Admin Console excluded from navbar)
   const navItems: RoleNavItem[] = (() => {
     if (firebaseUser && role === 'guide') {
       return [
@@ -126,19 +128,15 @@ export function Navbar({
           onClick: () => onNavigate('destinations'),
         },
         {
-          id: 'book-hotels',
-          label: 'Book Hotels',
-          isActive:
-            (currentRoute === 'packages' || currentRoute === 'marketplace') &&
-            activeMarketplaceTab === 'hotels',
+          id: 'hotels',
+          label: 'Hotels',
+          isActive: isMarketplaceRoute && activeMarketplaceTab === 'hotels',
           onClick: () => onOpenMarketplaceTab('hotels'),
         },
         {
-          id: 'book-cars',
-          label: 'Book Cars',
-          isActive:
-            (currentRoute === 'packages' || currentRoute === 'marketplace') &&
-            activeMarketplaceTab === 'vehicles',
+          id: 'vehicles',
+          label: 'Vehicles',
+          isActive: isMarketplaceRoute && activeMarketplaceTab === 'vehicles',
           onClick: () => onOpenMarketplaceTab('vehicles'),
         },
         {
@@ -171,16 +169,16 @@ export function Navbar({
           onClick: () => onOpenDashboardTab('provider'),
         },
         {
-          id: 'hotel-messages',
-          label: 'Guest Messages',
-          isActive: currentRoute === 'dashboard' && activeDashboardTab === 'messages',
-          onClick: () => onOpenDashboardTab('messages'),
+          id: 'vehicles',
+          label: 'Vehicles',
+          isActive: isMarketplaceRoute && activeMarketplaceTab === 'vehicles',
+          onClick: () => onOpenMarketplaceTab('vehicles'),
         },
         {
-          id: 'safety',
-          label: 'Safety & Weather',
-          isActive: currentRoute === 'safety',
-          onClick: () => onNavigate('safety'),
+          id: 'hotel-messages',
+          label: 'Messages',
+          isActive: currentRoute === 'dashboard' && activeDashboardTab === 'messages',
+          onClick: () => onOpenDashboardTab('messages'),
         },
       ];
     }
@@ -200,6 +198,12 @@ export function Navbar({
           onClick: () => onNavigate('destinations'),
         },
         {
+          id: 'hotels',
+          label: 'Hotels',
+          isActive: isMarketplaceRoute && activeMarketplaceTab === 'hotels',
+          onClick: () => onOpenMarketplaceTab('hotels'),
+        },
+        {
           id: 'fleet-ops',
           label: 'Fleet & Rentals',
           isActive: currentRoute === 'dashboard' && activeDashboardTab === 'provider',
@@ -211,51 +215,10 @@ export function Navbar({
           isActive: currentRoute === 'dashboard' && activeDashboardTab === 'messages',
           onClick: () => onOpenDashboardTab('messages'),
         },
-        {
-          id: 'safety',
-          label: 'Safety & Weather',
-          isActive: currentRoute === 'safety',
-          onClick: () => onNavigate('safety'),
-        },
       ];
     }
 
-    if (firebaseUser && isAdmin) {
-      return [
-        {
-          id: 'home',
-          label: 'Home',
-          isActive: currentRoute === 'home',
-          onClick: () => onNavigate('home'),
-        },
-        {
-          id: 'destinations',
-          label: 'Destinations',
-          isActive: currentRoute === 'destinations',
-          onClick: () => onNavigate('destinations'),
-        },
-        {
-          id: 'guides',
-          label: 'Guides',
-          isActive: currentRoute === 'guides',
-          onClick: () => onNavigate('guides'),
-        },
-        {
-          id: 'packages',
-          label: 'Packages',
-          isActive: currentRoute === 'packages' || currentRoute === 'marketplace',
-          onClick: () => onNavigate('packages'),
-        },
-        {
-          id: 'admin',
-          label: 'Admin Console',
-          isActive: currentRoute === 'dashboard' && activeDashboardTab === 'admin',
-          onClick: () => onOpenDashboardTab('admin'),
-        },
-      ];
-    }
-
-    // Default Guest & Tourist Navigation (Exact 5 requested menus)
+    // Standard Tourist, Guest & Admin navigation (Hotels & Vehicles included; no Admin Console in navbar)
     return [
       {
         id: 'home',
@@ -278,8 +241,23 @@ export function Navbar({
       {
         id: 'packages',
         label: 'Packages',
-        isActive: currentRoute === 'packages' || currentRoute === 'marketplace',
-        onClick: () => onNavigate('packages'),
+        isActive:
+          isMarketplaceRoute &&
+          activeMarketplaceTab !== 'hotels' &&
+          activeMarketplaceTab !== 'vehicles',
+        onClick: () => onOpenMarketplaceTab('packages'),
+      },
+      {
+        id: 'hotels',
+        label: 'Hotels',
+        isActive: isMarketplaceRoute && activeMarketplaceTab === 'hotels',
+        onClick: () => onOpenMarketplaceTab('hotels'),
+      },
+      {
+        id: 'vehicles',
+        label: 'Vehicles',
+        isActive: isMarketplaceRoute && activeMarketplaceTab === 'vehicles',
+        onClick: () => onOpenMarketplaceTab('vehicles'),
       },
       {
         id: 'ai-planner',
@@ -298,7 +276,7 @@ export function Navbar({
         : role === 'vehicle_owner'
           ? 'Fleet Portal'
           : isAdmin
-            ? 'Admin Console'
+            ? 'Administration'
             : 'My Dashboard';
 
   const workspaceDefaultTab: DashboardQuickTab =
@@ -310,10 +288,10 @@ export function Navbar({
 
   return (
     <div className="sticky top-0 z-40 no-print">
-      {/* Slim Cobalt Blue Utility Strip */}
-      <div className="hidden md:block bg-[#0B57D0] text-white text-xs">
+      {/* Slim Cool Alpine Utility Strip */}
+      <div className="hidden md:block bg-gradient-to-r from-[#06183D] via-[#0B57D0] to-[#0284C7] text-white text-xs">
         <div className="max-w-[1440px] mx-auto px-6 h-8 flex items-center justify-between gap-6">
-          <div className="flex items-center gap-6 text-white/90">
+          <div className="flex items-center gap-6 text-blue-50/90">
             <span>Verified Pakistan Guides</span>
             <span>Transparent PKR Budgeting</span>
             <span>Real-Time Mountain Weather</span>
@@ -326,7 +304,7 @@ export function Navbar({
                 className={`inline-flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer ${
                   currentRoute === 'travel-buddy'
                     ? 'font-semibold underline underline-offset-4'
-                    : 'text-white/90'
+                    : 'text-blue-50/90'
                 }`}
               >
                 <Users className="w-3.5 h-3.5" />
@@ -339,7 +317,7 @@ export function Navbar({
               className={`inline-flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer ${
                 currentRoute === 'safety'
                   ? 'font-semibold underline underline-offset-4'
-                  : 'text-white/90'
+                  : 'text-blue-50/90'
               }`}
             >
               <ShieldAlert className="w-3.5 h-3.5" />
@@ -349,9 +327,9 @@ export function Navbar({
         </div>
       </div>
 
-      {/* Main White Navigation Bar */}
-      <header className="bg-white/95 backdrop-blur border-b border-slate-200">
-        <div className="max-w-[1440px] mx-auto px-6 h-16 flex items-center justify-between gap-8">
+      {/* Main Frosted Glass Navigation Bar */}
+      <header className="bg-white/88 backdrop-blur-md border-b border-slate-200/80 shadow-[0_6px_28px_-16px_rgba(8,36,94,0.18)]">
+        <div className="max-w-[1440px] mx-auto px-6 h-16 flex items-center justify-between gap-6">
           {/* Zone 1: Brand Title */}
           <button
             type="button"
@@ -365,7 +343,7 @@ export function Navbar({
           </button>
 
           {/* Zone 2: Role-Aware Navigation Links */}
-          <nav className="hidden md:flex items-center gap-7" aria-label="Primary navigation">
+          <nav className="hidden md:flex items-center gap-5 lg:gap-6" aria-label="Primary navigation">
             {navItems.map((item) => (
               <button
                 key={item.id}
@@ -379,43 +357,40 @@ export function Navbar({
               >
                 {item.label}
                 {item.isActive && (
-                  <span className="absolute left-0 right-0 -bottom-[21px] h-0.5 bg-[#0D5EFF]" />
+                  <span className="absolute left-0 right-0 -bottom-[21px] h-0.5 bg-gradient-to-r from-[#0D5EFF] to-[#38BDF8] rounded-full" />
                 )}
               </button>
             ))}
           </nav>
 
-          {/* Zone 3: Sign In/Sign Up Tabs OR Logged-In Profile Pic + Account Menu */}
+          {/* Zone 3: Sign In/Sign Up Tabs OR Logged-In Profile Photo + Account Type ONLY */}
           <div className="hidden md:flex items-center gap-2.5 shrink-0">
             {firebaseUser ? (
               <div className="relative" ref={profileDropdownRef}>
                 <button
                   type="button"
                   onClick={() => setProfileMenuOpen((v) => !v)}
-                  className="inline-flex items-center gap-2.5 pl-1.5 pr-3 py-1 rounded-full border border-slate-200 bg-[#F4F7FC] hover:border-[#0D5EFF]/40 hover:bg-[#EEF4FF] transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-full border border-blue-200/80 bg-[#EEF4FF]/70 hover:bg-[#EEF4FF] hover:border-[#0D5EFF]/45 transition-colors cursor-pointer"
                   aria-expanded={profileMenuOpen}
                   aria-label="Open profile menu"
                 >
                   {photoUrl && !avatarFailed ? (
                     <img
                       src={photoUrl}
-                      alt={displayName}
+                      alt={roleLabel}
                       referrerPolicy="no-referrer"
                       onError={() => setAvatarFailed(true)}
-                      className="w-8 h-8 rounded-full object-cover border border-[#0D5EFF]/25"
+                      className="w-8 h-8 rounded-full object-cover ring-2 ring-white border border-[#0D5EFF]/30"
                     />
                   ) : (
-                    <span className="w-8 h-8 rounded-full bg-[#0D5EFF] text-white text-xs font-bold flex items-center justify-center">
+                    <span className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0D5EFF] to-[#0284C7] text-white text-xs font-bold flex items-center justify-center ring-2 ring-white">
                       {getInitials(displayName)}
                     </span>
                   )}
 
-                  <div className="text-left leading-tight">
-                    <div className="text-xs font-bold text-[#0F172A] max-w-[130px] truncate">
-                      {displayName}
-                    </div>
-                    <div className="text-[11px] font-medium text-[#0D5EFF]">{roleLabel}</div>
-                  </div>
+                  <span className="text-xs font-bold text-[#0A2351] whitespace-nowrap">
+                    {roleLabel}
+                  </span>
 
                   {unreadCount > 0 && (
                     <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono font-bold bg-[#FF6B2C] text-white rounded-full tabular-nums">
@@ -427,27 +402,27 @@ export function Navbar({
 
                 {profileMenuOpen && (
                   <div className="absolute right-0 mt-2 w-72 bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden z-50">
-                    <div className="p-4 bg-[#F4F7FC] border-b border-slate-200 flex items-center gap-3">
+                    <div className="p-4 bg-gradient-to-br from-[#F4F7FC] to-[#EBF3FF] border-b border-slate-200 flex items-center gap-3">
                       {photoUrl && !avatarFailed ? (
                         <img
                           src={photoUrl}
-                          alt={displayName}
+                          alt={roleLabel}
                           referrerPolicy="no-referrer"
                           onError={() => setAvatarFailed(true)}
                           className="w-11 h-11 rounded-full object-cover border border-[#0D5EFF]/25 shrink-0"
                         />
                       ) : (
-                        <span className="w-11 h-11 rounded-full bg-[#0D5EFF] text-white text-sm font-bold flex items-center justify-center shrink-0">
+                        <span className="w-11 h-11 rounded-full bg-gradient-to-br from-[#0D5EFF] to-[#0284C7] text-white text-sm font-bold flex items-center justify-center shrink-0">
                           {getInitials(displayName)}
                         </span>
                       )}
                       <div className="min-w-0">
-                        <div className="font-display font-bold text-sm text-[#0F172A] truncate">
-                          {displayName}
+                        <div className="font-display font-bold text-sm text-[#0A2351] truncate">
+                          {roleLabel} Account
                         </div>
                         <div className="text-xs text-slate-500 truncate">{firebaseUser.email}</div>
-                        <div className="text-[11px] font-semibold text-[#0D5EFF] mt-0.5">
-                          {roleLabel} · {userProfile?.verificationStatus || 'active'}
+                        <div className="text-[11px] font-semibold text-[#0D5EFF] mt-0.5 capitalize">
+                          {userProfile?.verificationStatus || 'active'}
                         </div>
                       </div>
                     </div>
@@ -514,7 +489,7 @@ export function Navbar({
                 )}
               </div>
             ) : (
-              <div className="inline-flex items-center p-1 bg-[#F4F7FC] border border-slate-200 rounded-xl">
+              <div className="inline-flex items-center p-1 bg-[#EEF4FF]/70 border border-blue-200/80 rounded-xl">
                 <button
                   type="button"
                   onClick={() => onOpenAuthModal('signin')}
@@ -525,7 +500,7 @@ export function Navbar({
                 <button
                   type="button"
                   onClick={() => onOpenAuthModal('signup')}
-                  className="px-3.5 py-1.5 bg-[#0D5EFF] text-white text-sm font-semibold rounded-lg hover:bg-[#0948CC] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                  className="px-3.5 py-1.5 bg-gradient-to-r from-[#0D5EFF] to-[#0284C7] text-white text-sm font-semibold rounded-lg hover:from-[#0948CC] hover:to-[#0369A1] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
                 >
                   Sign Up
                 </button>
@@ -552,19 +527,21 @@ export function Navbar({
                 {photoUrl && !avatarFailed ? (
                   <img
                     src={photoUrl}
-                    alt={displayName}
+                    alt={roleLabel}
                     referrerPolicy="no-referrer"
                     onError={() => setAvatarFailed(true)}
                     className="w-10 h-10 rounded-full object-cover border border-[#0D5EFF]/25"
                   />
                 ) : (
-                  <span className="w-10 h-10 rounded-full bg-[#0D5EFF] text-white text-xs font-bold flex items-center justify-center">
+                  <span className="w-10 h-10 rounded-full bg-gradient-to-br from-[#0D5EFF] to-[#0284C7] text-white text-xs font-bold flex items-center justify-center">
                     {getInitials(displayName)}
                   </span>
                 )}
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-bold text-[#0F172A] truncate">{displayName}</div>
-                  <div className="text-xs text-[#0D5EFF] font-medium">{roleLabel}</div>
+                  <div className="text-sm font-bold text-[#0A2351]">{roleLabel}</div>
+                  <div className="text-xs text-[#0D5EFF] font-medium capitalize">
+                    {userProfile?.verificationStatus || 'active'}
+                  </div>
                 </div>
                 <button
                   type="button"
@@ -638,7 +615,7 @@ export function Navbar({
                       onOpenDashboardTab(workspaceDefaultTab);
                       setMobileOpen(false);
                     }}
-                    className="flex-1 px-4 py-2.5 bg-[#0D5EFF] text-white text-sm font-semibold rounded-lg"
+                    className="flex-1 px-4 py-2.5 bg-gradient-to-r from-[#0D5EFF] to-[#0284C7] text-white text-sm font-semibold rounded-lg"
                   >
                     {workspaceLabel} {unreadCount > 0 ? `(${unreadCount})` : ''}
                   </button>
@@ -671,7 +648,7 @@ export function Navbar({
                       onOpenAuthModal('signup');
                       setMobileOpen(false);
                     }}
-                    className="flex-1 px-4 py-2.5 bg-[#0D5EFF] text-white text-sm font-semibold rounded-lg"
+                    className="flex-1 px-4 py-2.5 bg-gradient-to-r from-[#0D5EFF] to-[#0284C7] text-white text-sm font-semibold rounded-lg"
                   >
                     Sign Up
                   </button>
