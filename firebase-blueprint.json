@@ -1,0 +1,472 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Private user account and profile record with role and verification status.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "displayName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "email": { "type": "string", "format": "email", "maxLength": 160 },
+        "photoURL": { "type": "string", "maxLength": 500 },
+        "phone": { "type": "string", "maxLength": 30 },
+        "city": { "type": "string", "maxLength": 80 },
+        "role": { "type": "string", "enum": ["tourist", "guide", "hotel_owner", "vehicle_owner", "admin"] },
+        "verificationStatus": { "type": "string", "enum": ["unverified", "pending", "verified", "rejected"] },
+        "accountStatus": { "type": "string", "enum": ["active", "suspended"] },
+        "emergencyContacts": { "type": "array" },
+        "bio": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "displayName", "email", "role", "verificationStatus", "accountStatus", "createdAt", "updatedAt"]
+    },
+    "PublicProfile": {
+      "title": "PublicProfile",
+      "description": "Publicly visible service provider or traveler directory profile with no PII.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "displayName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "role": { "type": "string", "enum": ["tourist", "guide", "hotel_owner", "vehicle_owner", "admin"] },
+        "verificationStatus": { "type": "string", "enum": ["unverified", "pending", "verified", "rejected"] },
+        "bio": { "type": "string", "maxLength": 1000 },
+        "languages": { "type": "array" },
+        "expertise": { "type": "array" },
+        "operatingDestinations": { "type": "array" },
+        "experienceYears": { "type": "number" },
+        "completedBookings": { "type": "number" },
+        "cancellationCount": { "type": "number" },
+        "avgRating": { "type": "number" },
+        "reviewCount": { "type": "number" },
+        "responseRate": { "type": "number" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "displayName", "role", "verificationStatus", "updatedAt"]
+    },
+    "Destination": {
+      "title": "Destination",
+      "description": "Curated Pakistan tourism destination with geography, highlights, and budget metadata.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "minLength": 2, "maxLength": 100 },
+        "region": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "category": { "type": "string", "enum": ["Mountains", "Valleys", "Lakes", "Historical", "Adventure", "Cultural", "Family"] },
+        "description": { "type": "string", "minLength": 10, "maxLength": 2000 },
+        "bestSeason": { "type": "string", "maxLength": 100 },
+        "elevationMeters": { "type": "number" },
+        "estimatedBudgetPkr": { "type": "number" },
+        "lat": { "type": "number" },
+        "lng": { "type": "number" },
+        "highlights": { "type": "array" },
+        "activities": { "type": "array" },
+        "imageUrl": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "region", "category", "description", "lat", "lng", "estimatedBudgetPkr", "createdAt", "updatedAt"]
+    },
+    "TourPackage": {
+      "title": "TourPackage",
+      "description": "Tour guide managed travel package with schedule, pricing, and availability.",
+      "type": "object",
+      "properties": {
+        "guideId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "guideName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "title": { "type": "string", "minLength": 3, "maxLength": 140 },
+        "destinationName": { "type": "string", "minLength": 2, "maxLength": 100 },
+        "description": { "type": "string", "minLength": 10, "maxLength": 3000 },
+        "pricePerPersonPkr": { "type": "number" },
+        "durationDays": { "type": "number" },
+        "maxGroupSize": { "type": "number" },
+        "departureDate": { "type": "string", "maxLength": 40 },
+        "included": { "type": "array" },
+        "excluded": { "type": "array" },
+        "dailyItinerary": { "type": "array" },
+        "availability": { "type": "string", "enum": ["available", "paused", "sold_out"] },
+        "imageUrl": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["guideId", "guideName", "title", "destinationName", "description", "pricePerPersonPkr", "durationDays", "maxGroupSize", "availability", "createdAt", "updatedAt"]
+    },
+    "Hotel": {
+      "title": "Hotel",
+      "description": "Hotel property managed by a hotel owner.",
+      "type": "object",
+      "properties": {
+        "ownerId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "ownerName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "name": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "destinationName": { "type": "string", "minLength": 2, "maxLength": 100 },
+        "address": { "type": "string", "maxLength": 240 },
+        "description": { "type": "string", "maxLength": 2000 },
+        "facilities": { "type": "array" },
+        "checkInTime": { "type": "string", "maxLength": 20 },
+        "checkOutTime": { "type": "string", "maxLength": 20 },
+        "lat": { "type": "number" },
+        "lng": { "type": "number" },
+        "imageUrl": { "type": "string", "maxLength": 500 },
+        "availability": { "type": "string", "enum": ["active", "inactive"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["ownerId", "ownerName", "name", "destinationName", "description", "availability", "createdAt", "updatedAt"]
+    },
+    "Room": {
+      "title": "Room",
+      "description": "Room category belonging to a hotel property.",
+      "type": "object",
+      "properties": {
+        "hotelId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "ownerId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "categoryName": { "type": "string", "minLength": 2, "maxLength": 100 },
+        "capacity": { "type": "number" },
+        "pricePerNightPkr": { "type": "number" },
+        "totalInventory": { "type": "number" },
+        "facilities": { "type": "array" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["hotelId", "ownerId", "categoryName", "capacity", "pricePerNightPkr", "totalInventory", "createdAt", "updatedAt"]
+    },
+    "Vehicle": {
+      "title": "Vehicle",
+      "description": "Rental vehicle inventory managed by a vehicle owner.",
+      "type": "object",
+      "properties": {
+        "ownerId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "ownerName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "name": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "category": { "type": "string", "enum": ["4x4 SUV", "Sedan", "Hiace Van", "Coaster", "Hatchback"] },
+        "makeModel": { "type": "string", "maxLength": 100 },
+        "modelYear": { "type": "number" },
+        "seatingCapacity": { "type": "number" },
+        "hasAC": { "type": "boolean" },
+        "fuelType": { "type": "string", "maxLength": 40 },
+        "pricePerDayPkr": { "type": "number" },
+        "driverAvailable": { "type": "boolean" },
+        "serviceLocations": { "type": "array" },
+        "availability": { "type": "string", "enum": ["available", "maintenance", "booked"] },
+        "imageUrl": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["ownerId", "ownerName", "name", "category", "seatingCapacity", "pricePerDayPkr", "availability", "createdAt", "updatedAt"]
+    },
+    "LocalExperience": {
+      "title": "LocalExperience",
+      "description": "Community-based local tourism experience requiring admin approval.",
+      "type": "object",
+      "properties": {
+        "providerId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "providerName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "category": { "type": "string", "maxLength": 60 },
+        "title": { "type": "string", "minLength": 3, "maxLength": 140 },
+        "destinationName": { "type": "string", "maxLength": 100 },
+        "description": { "type": "string", "maxLength": 2000 },
+        "pricePkr": { "type": "number" },
+        "durationHours": { "type": "number" },
+        "approvalStatus": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "availability": { "type": "string", "enum": ["available", "paused"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["providerId", "providerName", "category", "title", "destinationName", "pricePkr", "approvalStatus", "availability", "createdAt", "updatedAt"]
+    },
+    "Itinerary": {
+      "title": "Itinerary",
+      "description": "AI-generated and dynamically re-planned tourist itinerary.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "title": { "type": "string", "minLength": 2, "maxLength": 140 },
+        "startingLocation": { "type": "string", "maxLength": 100 },
+        "destination": { "type": "string", "maxLength": 100 },
+        "startDate": { "type": "string", "maxLength": 40 },
+        "endDate": { "type": "string", "maxLength": 40 },
+        "travelers": { "type": "number" },
+        "budgetPkr": { "type": "number" },
+        "interests": { "type": "array" },
+        "days": { "type": "array" },
+        "budgetBreakdown": { "type": "object" },
+        "revisions": { "type": "array" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "title", "destination", "startDate", "endDate", "travelers", "budgetPkr", "days", "createdAt", "updatedAt"]
+    },
+    "Booking": {
+      "title": "Booking",
+      "description": "Unified reservation and custom trip request for packages, hotels, vehicles, and experiences.",
+      "type": "object",
+      "properties": {
+        "touristId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "touristName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "providerId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "providerName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "bookingType": { "type": "string", "enum": ["package", "hotel", "vehicle", "experience", "custom_trip"] },
+        "itemId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "itemTitle": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "destinationName": { "type": "string", "maxLength": 100 },
+        "startDate": { "type": "string", "maxLength": 40 },
+        "endDate": { "type": "string", "maxLength": 40 },
+        "guests": { "type": "number" },
+        "roomId": { "type": "string", "maxLength": 128 },
+        "driverRequired": { "type": "boolean" },
+        "totalPricePkr": { "type": "number" },
+        "paymentMethod": { "type": "string", "enum": ["cash_on_arrival", "manual_transfer"] },
+        "paymentStatus": { "type": "string", "enum": ["unpaid", "pending", "paid", "refunded"] },
+        "status": { "type": "string", "enum": ["pending", "accepted", "confirmed", "rejected", "cancelled", "completed"] },
+        "notes": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["touristId", "touristName", "providerId", "providerName", "bookingType", "itemId", "itemTitle", "startDate", "endDate", "guests", "totalPricePkr", "paymentMethod", "paymentStatus", "status", "createdAt", "updatedAt"]
+    },
+    "Expense": {
+      "title": "Expense",
+      "description": "Personal or group trip expense record in PKR.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "tripTitle": { "type": "string", "maxLength": 120 },
+        "category": { "type": "string", "enum": ["Accommodation", "Transportation", "Food", "Activities", "Shopping", "Tour guide", "Miscellaneous"] },
+        "description": { "type": "string", "maxLength": 240 },
+        "amountPkr": { "type": "number" },
+        "date": { "type": "string", "maxLength": 40 },
+        "isShared": { "type": "boolean" },
+        "paidByName": { "type": "string", "maxLength": 100 },
+        "splitMembers": { "type": "array" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "tripTitle", "category", "description", "amountPkr", "date", "isShared", "createdAt", "updatedAt"]
+    },
+    "TravelBuddyRequest": {
+      "title": "TravelBuddyRequest",
+      "description": "Public travel companion discovery request without private contact info.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "authorName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "destination": { "type": "string", "minLength": 2, "maxLength": 100 },
+        "startDate": { "type": "string", "maxLength": 40 },
+        "endDate": { "type": "string", "maxLength": 40 },
+        "budgetMinPkr": { "type": "number" },
+        "budgetMaxPkr": { "type": "number" },
+        "travelersCount": { "type": "number" },
+        "desiredGroupSize": { "type": "number" },
+        "interests": { "type": "array" },
+        "notes": { "type": "string", "maxLength": 500 },
+        "status": { "type": "string", "enum": ["open", "matched", "closed"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "authorName", "destination", "startDate", "endDate", "budgetMinPkr", "budgetMaxPkr", "desiredGroupSize", "interests", "status", "createdAt", "updatedAt"]
+    },
+    "TravelGroup": {
+      "title": "TravelGroup",
+      "description": "Collaborative travel group with membership subcollection.",
+      "type": "object",
+      "properties": {
+        "creatorId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "creatorName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "name": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "destination": { "type": "string", "maxLength": 100 },
+        "startDate": { "type": "string", "maxLength": 40 },
+        "endDate": { "type": "string", "maxLength": 40 },
+        "itinerarySummary": { "type": "string", "maxLength": 1500 },
+        "maxMembers": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["creatorId", "creatorName", "name", "destination", "startDate", "endDate", "maxMembers", "createdAt", "updatedAt"]
+    },
+    "GroupMember": {
+      "title": "GroupMember",
+      "description": "Membership record inside a travel group.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "displayName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "role": { "type": "string", "enum": ["creator", "member"] },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "joinedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "displayName", "role", "status", "joinedAt"]
+    },
+    "Conversation": {
+      "title": "Conversation",
+      "description": "Messaging thread between authenticated participants.",
+      "type": "object",
+      "properties": {
+        "participantIds": { "type": "array" },
+        "participantNames": { "type": "object" },
+        "title": { "type": "string", "maxLength": 140 },
+        "type": { "type": "string", "enum": ["direct", "group"] },
+        "lastMessage": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["participantIds", "title", "type", "createdAt", "updatedAt"]
+    },
+    "Message": {
+      "title": "Message",
+      "description": "Single chat message inside a conversation subcollection.",
+      "type": "object",
+      "properties": {
+        "senderId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "senderName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "text": { "type": "string", "minLength": 1, "maxLength": 2000 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["senderId", "senderName", "text", "createdAt"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "User notification record for system and booking events.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "senderId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "title": { "type": "string", "minLength": 1, "maxLength": 140 },
+        "body": { "type": "string", "minLength": 1, "maxLength": 500 },
+        "category": { "type": "string", "enum": ["booking", "message", "verification", "advisory", "emergency", "group"] },
+        "read": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "senderId", "title", "body", "category", "read", "createdAt"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "Verified booking review and rating.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "authorName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "bookingId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "targetType": { "type": "string", "enum": ["guide", "hotel", "vehicle", "package", "experience"] },
+        "targetId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "targetName": { "type": "string", "maxLength": 140 },
+        "rating": { "type": "number" },
+        "comment": { "type": "string", "minLength": 3, "maxLength": 1000 },
+        "moderationStatus": { "type": "string", "enum": ["published", "flagged", "removed"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "authorName", "bookingId", "targetType", "targetId", "rating", "comment", "moderationStatus", "createdAt", "updatedAt"]
+    },
+    "Favorite": {
+      "title": "Favorite",
+      "description": "Saved destination or service bookmark.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "itemType": { "type": "string", "enum": ["destination", "package", "hotel", "vehicle", "experience"] },
+        "itemId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "itemTitle": { "type": "string", "maxLength": 140 },
+        "destinationName": { "type": "string", "maxLength": 100 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "itemType", "itemId", "itemTitle", "createdAt"]
+    },
+    "VerificationRequest": {
+      "title": "VerificationRequest",
+      "description": "Sensitive service provider verification request restricted to owner and admin.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "applicantName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "role": { "type": "string", "enum": ["guide", "hotel_owner", "vehicle_owner"] },
+        "cnicReference": { "type": "string", "maxLength": 40 },
+        "licenseOrRegInfo": { "type": "string", "maxLength": 200 },
+        "operatingDestinations": { "type": "array" },
+        "description": { "type": "string", "maxLength": 1500 },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "rejectionReason": { "type": "string", "maxLength": 400 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "applicantName", "role", "cnicReference", "licenseOrRegInfo", "status", "createdAt", "updatedAt"]
+    },
+    "EmergencyEvent": {
+      "title": "EmergencyEvent",
+      "description": "Tourist SOS emergency event restricted to tourist, assigned guide, and admin.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "touristName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "lat": { "type": "number" },
+        "lng": { "type": "number" },
+        "locationLabel": { "type": "string", "maxLength": 200 },
+        "notes": { "type": "string", "maxLength": 600 },
+        "assignedGuideId": { "type": "string", "maxLength": 128 },
+        "emergencyContactsNotified": { "type": "number" },
+        "status": { "type": "string", "enum": ["active", "acknowledged", "resolved"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "touristName", "locationLabel", "status", "createdAt", "updatedAt"]
+    },
+    "TravelAdvisory": {
+      "title": "TravelAdvisory",
+      "description": "Official and community-reported destination travel advisories.",
+      "type": "object",
+      "properties": {
+        "authorId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "title": { "type": "string", "minLength": 4, "maxLength": 160 },
+        "destination": { "type": "string", "minLength": 2, "maxLength": 100 },
+        "category": { "type": "string", "enum": ["Road closure", "Landslide warning", "Flood alert", "Snowfall warning", "Severe weather", "Official restriction"] },
+        "severity": { "type": "string", "enum": ["low", "moderate", "high", "critical"] },
+        "description": { "type": "string", "maxLength": 1500 },
+        "sourceType": { "type": "string", "enum": ["official", "user_report"] },
+        "verificationSource": { "type": "string", "maxLength": 160 },
+        "status": { "type": "string", "enum": ["active", "expired"] },
+        "expiresAt": { "type": "string", "maxLength": 40 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["authorId", "title", "destination", "category", "severity", "description", "sourceType", "verificationSource", "status", "createdAt", "updatedAt"]
+    },
+    "AdminLog": {
+      "title": "AdminLog",
+      "description": "Immutable administrative audit log.",
+      "type": "object",
+      "properties": {
+        "adminId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "action": { "type": "string", "maxLength": 120 },
+        "targetType": { "type": "string", "maxLength": 60 },
+        "targetId": { "type": "string", "maxLength": 128 },
+        "details": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["adminId", "action", "targetType", "targetId", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": { "schema": { "$ref": "#/entities/User" }, "description": "Private user profiles and role status" },
+    "/publicProfiles/{userId}": { "schema": { "$ref": "#/entities/PublicProfile" }, "description": "Public provider trust & directory cards" },
+    "/destinations/{destinationId}": { "schema": { "$ref": "#/entities/Destination" }, "description": "Pakistan tourism destinations" },
+    "/tourPackages/{packageId}": { "schema": { "$ref": "#/entities/TourPackage" }, "description": "Guide-offered tour packages" },
+    "/hotels/{hotelId}": { "schema": { "$ref": "#/entities/Hotel" }, "description": "Registered accommodation properties" },
+    "/rooms/{roomId}": { "schema": { "$ref": "#/entities/Room" }, "description": "Room categories and inventory" },
+    "/vehicles/{vehicleId}": { "schema": { "$ref": "#/entities/Vehicle" }, "description": "Rental vehicle listings" },
+    "/localExperiences/{experienceId}": { "schema": { "$ref": "#/entities/LocalExperience" }, "description": "Local cultural and community tourism experiences" },
+    "/itineraries/{itineraryId}": { "schema": { "$ref": "#/entities/Itinerary" }, "description": "Saved AI itineraries and revisions" },
+    "/bookings/{bookingId}": { "schema": { "$ref": "#/entities/Booking" }, "description": "Unified booking and reservation records" },
+    "/expenses/{expenseId}": { "schema": { "$ref": "#/entities/Expense" }, "description": "Budget and shared expense splits" },
+    "/travelBuddyRequests/{requestId}": { "schema": { "$ref": "#/entities/TravelBuddyRequest" }, "description": "Travel companion match requests" },
+    "/travelGroups/{groupId}": { "schema": { "$ref": "#/entities/TravelGroup" }, "description": "Collaborative travel groups" },
+    "/travelGroups/{groupId}/members/{memberId}": { "schema": { "$ref": "#/entities/GroupMember" }, "description": "Group membership documents" },
+    "/conversations/{conversationId}": { "schema": { "$ref": "#/entities/Conversation" }, "description": "Authorized messaging conversations" },
+    "/conversations/{conversationId}/messages/{messageId}": { "schema": { "$ref": "#/entities/Message" }, "description": "Conversation messages" },
+    "/notifications/{notificationId}": { "schema": { "$ref": "#/entities/Notification" }, "description": "Real-time user notifications" },
+    "/reviews/{reviewId}": { "schema": { "$ref": "#/entities/Review" }, "description": "Verified service reviews" },
+    "/favorites/{favoriteId}": { "schema": { "$ref": "#/entities/Favorite" }, "description": "User saved bookmarks" },
+    "/verificationRequests/{requestId}": { "schema": { "$ref": "#/entities/VerificationRequest" }, "description": "Provider verification applications" },
+    "/emergencyEvents/{eventId}": { "schema": { "$ref": "#/entities/EmergencyEvent" }, "description": "Tourist SOS events" },
+    "/travelAdvisories/{advisoryId}": { "schema": { "$ref": "#/entities/TravelAdvisory" }, "description": "Official and community advisories" },
+    "/adminLogs/{logId}": { "schema": { "$ref": "#/entities/AdminLog" }, "description": "Administrative audit trail" }
+  }
+}

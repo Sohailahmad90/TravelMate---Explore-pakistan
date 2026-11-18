@@ -1,0 +1,1260 @@
+# TRAVELMATE
+## AI-Powered Smart Tourism, Trip Planning & Management Platform
+
+**Project Type:** Full-Stack Web Application  
+**Project Category:** Smart Tourism and Travel Technology  
+**Target Market:** Pakistan  
+**Primary Currency:** Pakistani Rupee (PKR)  
+**Platform:** Responsive Web Application  
+**Project Purpose:** Final Year Project (FYP) and Future Commercial Deployment
+
+---
+
+# 1. PROJECT VISION AND OVERVIEW
+
+Design and develop TravelMate, a comprehensive, AI-powered smart tourism ecosystem that modernizes the travel experience through intelligent trip planning, integrated reservations, verified service providers, tourist safety, and personalized travel management.
+
+TravelMate aims to establish a unified digital platform connecting tourists, professional tour guides, hotel owners, and vehicle rental providers.
+
+Unlike conventional tourism websites that primarily focus on destination listings and basic reservations, TravelMate must provide an interconnected ecosystem in which users can discover destinations, generate personalized itineraries, compare travel services, manage reservations, coordinate with service providers, monitor expenses, and access travel assistance through a single platform.
+
+The application must be developed as a production-oriented, fully functional full-stack system rather than a static website or visual prototype.
+
+### Core Vision
+
+"To make travelling smarter, safer, more accessible, and more personalized through intelligent technology and seamless digital connectivity."
+
+### Brand Identity
+
+- **Brand Name:** TravelMate
+- **Tagline:** Plan Smarter. Travel Safer. Explore Better.
+- **Primary Market:** Pakistan
+- **Initial Geographic Focus:** Northern Pakistan, followed by nationwide expansion.
+
+# 2. PROJECT OBJECTIVES
+
+The system must achieve the following objectives:
+
+1. Simplify travel planning through AI-powered personalization.
+2. Connect tourists with verified local tourism professionals.
+3. Centralize tour package, accommodation, and transportation reservations.
+4. Improve tourist safety through emergency assistance and travel advisories.
+5. Enable collaborative travel through intelligent travel buddy matching.
+6. Provide transparent budgeting and expense management.
+7. Promote local tourism businesses and cultural experiences.
+8. Deliver reliable destination information and interactive maps.
+9. Provide comprehensive management tools for all registered stakeholders.
+10. Establish a scalable architecture suitable for future commercial deployment.
+
+# 3. TECHNOLOGY AND SYSTEM ARCHITECTURE
+
+Implement the application using a modern, maintainable, and scalable technology stack.
+
+### Frontend
+- React.js
+- TypeScript
+- Tailwind CSS
+- Reusable component architecture
+- Lucide React icon library
+- Framer Motion for controlled animations
+
+### Backend
+- Secure server-side API architecture
+- Node.js-compatible backend services
+- Server-side business logic
+- Structured API endpoints
+- Input validation and error handling
+
+### Database and Authentication
+- Firebase Authentication
+- Cloud Firestore
+- Firebase Storage
+- Firestore Security Rules
+- Role-based access control
+
+### External Integrations
+- Google Gemini API for AI-powered features
+- OpenStreetMap and Leaflet for interactive mapping
+- Open-Meteo API for weather information
+- Firebase Cloud Messaging for supported notifications
+
+### Engineering Requirements
+
+- Follow modular software architecture.
+- Maintain separation between presentation, business logic, and data access.
+- Use reusable components and services.
+- Protect all confidential credentials through environment variables.
+- Perform sensitive operations on the server.
+- Implement appropriate database indexes and access policies.
+- Maintain consistent data validation across frontend and backend.
+- Provide setup and deployment documentation.
+
+Do not expose private API keys or administrative credentials in client-side code.
+
+# 4. USER ROLES AND ACCESS CONTROL
+
+TravelMate must support four primary user roles, along with a separately authorized administrator.
+
+## 4.1 Tourist / Traveller
+
+Tourists are the primary consumers of the platform.
+
+### Account Management
+- Register and authenticate securely.
+- Manage personal profiles.
+- Upload profile photographs.
+- Update contact information.
+- Change account settings.
+- Reset passwords.
+- Manage trusted emergency contacts.
+
+### Travel Discovery
+- Explore destinations.
+- Browse tour packages.
+- Search verified guides.
+- Discover hotels and rental vehicles.
+- Explore local tourism experiences.
+- Save favourite destinations and services.
+- Compare available travel options.
+
+### Travel Management
+- Generate personalized itineraries.
+- Create customized trip requests.
+- Submit booking requests.
+- Manage reservations.
+- Monitor upcoming trips.
+- Track trip expenses.
+- Download travel itineraries.
+- Access booking history.
+- Manage cancellations according to applicable policies.
+
+### Communication
+- Communicate with assigned guides.
+- Contact accommodation providers.
+- Contact vehicle providers.
+- Receive booking notifications.
+- Participate in approved travel groups.
+
+### Personal Dashboard
+
+Provide a centralized dashboard containing:
+
+- Personalized welcome section.
+- Upcoming travel plans.
+- Active and pending bookings.
+- Saved itineraries.
+- Budget overview.
+- Recent notifications.
+- Favourite destinations.
+- Recommended travel experiences.
+- Quick-access actions.
+
+## 4.2 Tour Guide
+
+Tour guides must have independent registration, verification, and operational dashboards.
+
+### Registration Information
+- Full name.
+- Email address.
+- Phone number.
+- Profile photograph.
+- CNIC verification information.
+- Professional experience.
+- Languages spoken.
+- Areas of expertise.
+- Operating destinations.
+- Professional description.
+- Relevant certifications.
+
+### Guide Management Features
+- Create tour packages.
+- Edit existing packages.
+- Delete owned packages.
+- Upload package photographs.
+- Set package pricing.
+- Define tour duration.
+- Specify departure dates.
+- Configure maximum group size.
+- Manage package availability.
+- Define included and excluded services.
+- Manage incoming trip requests.
+- Accept or reject requests.
+- Submit customized travel offers.
+- Manage confirmed reservations.
+- Communicate with tourists.
+- View completed tours.
+- Monitor earnings.
+- Review customer feedback.
+- Manage professional availability.
+
+### Tour Package Structure
+
+Each package must contain:
+
+- Package title.
+- Destination.
+- Detailed description.
+- Package images.
+- Price per person.
+- Duration.
+- Daily itinerary.
+- Included services.
+- Excluded services.
+- Departure schedule.
+- Maximum participants.
+- Availability.
+- Assigned guide information.
+
+Only administrators can grant verified provider status.
+
+## 4.3 Hotel Owner
+
+Hotel owners must be able to manage their accommodation businesses independently.
+
+### Registration Information
+- Owner name.
+- Email.
+- Phone number.
+- Hotel name.
+- Property address.
+- Destination.
+- Business description.
+- Verification documents.
+
+### Hotel Management
+- Register accommodation properties.
+- Add and manage rooms.
+- Upload hotel photographs.
+- Configure room categories.
+- Set room prices.
+- Define room facilities.
+- Manage availability.
+- Configure check-in and check-out policies.
+- View incoming reservations.
+- Accept or reject reservation requests.
+- Manage cancellations.
+- Communicate with tourists.
+- Monitor earnings.
+- View customer ratings and reviews.
+
+### Hotel Listing Information
+
+- Hotel name.
+- Location.
+- Description.
+- Photographs.
+- Available room types.
+- Room capacity.
+- Facilities.
+- Pricing per night.
+- Available inventory.
+- Check-in and check-out information.
+- Customer ratings.
+- Contact details.
+
+Implement reliable reservation validation to prevent double bookings and overlapping inventory reservations.
+
+## 4.4 Vehicle Owner
+
+Vehicle owners must have a dedicated dashboard for rental inventory and reservation management.
+
+### Registration Information
+- Owner name.
+- Email.
+- Phone.
+- Address.
+- Identity verification information.
+
+### Vehicle Management
+- Add vehicles.
+- Edit vehicle information.
+- Remove owned listings.
+- Upload vehicle images.
+- Set rental rates.
+- Manage availability.
+- Accept or reject rental requests.
+- Manage reservations.
+- Communicate with tourists.
+- Monitor rental earnings.
+- View ratings and reviews.
+
+### Vehicle Information
+
+- Vehicle name.
+- Vehicle category.
+- Manufacturer and model.
+- Model year.
+- Registration information.
+- Seating capacity.
+- Air conditioning availability.
+- Fuel type.
+- Rental price.
+- Driver availability.
+- Service locations.
+- Vehicle photographs.
+- Availability status.
+
+Prevent conflicting reservations for the same vehicle.
+
+## 4.5 Administrator
+
+Develop a secure, independent administration interface.
+
+### User Administration
+- View registered accounts.
+- Search and filter users.
+- Filter by role.
+- Review user information.
+- Suspend or reactivate accounts.
+- Manage reported accounts.
+
+### Verification Administration
+- Review tour guide applications.
+- Review hotel owner applications.
+- Review vehicle owner applications.
+- Approve or reject verification requests.
+- Record rejection reasons.
+- Manage verification status.
+
+### Platform Administration
+- Manage destinations.
+- Manage categories.
+- Manage packages.
+- Manage hotels.
+- Manage vehicles.
+- Manage local experiences.
+- Moderate reviews.
+- Monitor reservations.
+- Manage reported content.
+- Publish official travel advisories.
+
+### Analytics Dashboard
+
+Display accurate database-driven statistics:
+
+- Total registered users.
+- Users by category.
+- Total service providers.
+- Total reservations.
+- Completed trips.
+- Pending requests.
+- Cancellation statistics.
+- Monthly registration trends.
+- Monthly booking trends.
+- Most popular destinations.
+- Platform revenue where applicable.
+
+Provide interactive charts, date filters, and data summaries.
+
+# 5. AI-POWERED SMART TRIP PLANNER
+
+Develop an intelligent trip planning engine using the Gemini API.
+
+This module must be a central feature of TravelMate.
+
+### User Input Parameters
+
+- Starting location.
+- Destination.
+- Departure date.
+- Return date.
+- Number of travellers.
+- Total available budget in PKR.
+- Travel preferences.
+- Accommodation preference.
+- Transportation preference.
+- Preferred activities.
+- Special requirements.
+
+### Travel Interest Categories
+
+- Mountain exploration.
+- Lakes and valleys.
+- Adventure tourism.
+- Hiking and trekking.
+- Historical exploration.
+- Cultural experiences.
+- Wildlife.
+- Photography.
+- Local cuisine.
+- Family tourism.
+- Honeymoon travel.
+
+### AI Processing Requirements
+
+Analyze user preferences and generate a personalized travel itinerary containing:
+
+1. Destination recommendations.
+2. Day-by-day travel schedule.
+3. Suggested attractions.
+4. Estimated transportation costs.
+5. Estimated accommodation expenses.
+6. Estimated food expenses.
+7. Activity expenses.
+8. Estimated total expenditure.
+9. Recommended duration.
+10. Suggested travel packages.
+11. Available verified guides.
+12. Alternative travel options.
+
+### Example Scenario
+
+A tourist provides the following information:
+
+- Destination: Hunza Valley.
+- Duration: Five days.
+- Budget: PKR 40,000.
+- Travellers: Two.
+- Interests: Mountains, lakes, photography.
+
+The system should generate a structured five-day itinerary with suggested attractions, approximate daily schedules, and a categorized budget.
+
+### User Controls
+
+Allow tourists to:
+
+- Edit generated itineraries.
+- Regenerate selected itinerary sections.
+- Change the budget.
+- Modify travel dates.
+- Compare alternative plans.
+- Save multiple itineraries.
+- Export itineraries to PDF.
+- Convert an itinerary into a trip request.
+- Proceed to relevant booking services.
+
+AI-generated estimates must be explicitly distinguished from actual database prices and confirmed reservations.
+
+The AI must not fabricate provider availability, hotel inventory, confirmed prices, or real-time road conditions.
+
+# 6. AI DYNAMIC TRIP RE-PLANNING
+
+Develop a context-aware itinerary adjustment system.
+
+The system should evaluate travel disruptions and propose alternative arrangements.
+
+### Operational Scenario
+
+A tourist has planned a five-day journey to Hunza. Unexpected weather conditions affect an activity scheduled for the second day.
+
+The application should:
+
+1. Retrieve available weather information.
+2. Identify potentially affected activities.
+3. Evaluate alternative attractions.
+4. Suggest revised schedules.
+5. Recalculate estimated expenses.
+6. Display the proposed changes.
+7. Request tourist approval.
+8. Update the saved itinerary after approval.
+9. Notify the assigned tour guide when applicable.
+
+Maintain the original itinerary and revision history.
+
+Do not automatically cancel existing reservations or claim that a destination is inaccessible without verified information.
+
+# 7. INTELLIGENT TRAVEL BUDDY MATCHING
+
+Implement a social travel coordination module.
+
+### Travel Request Creation
+
+Tourists can publish travel requests containing:
+
+- Destination.
+- Travel dates.
+- Budget range.
+- Number of travellers.
+- Preferred activities.
+- Desired group size.
+- Travel preferences.
+
+### Matching Algorithm
+
+Evaluate compatibility using:
+
+- Destination similarity.
+- Date compatibility.
+- Budget similarity.
+- Interest similarity.
+- Group size preferences.
+
+Display a matching percentage with understandable explanations.
+
+### Group Management
+
+- Browse matching requests.
+- Send joining requests.
+- Accept or reject invitations.
+- Create travel groups.
+- Manage group participants.
+- Communicate through group chat.
+- Share approved itineraries.
+- Leave groups.
+- Report or block users.
+
+Implement privacy controls so that personal contact information and sensitive details are not publicly exposed.
+
+# 8. TOURIST SAFETY AND EMERGENCY ASSISTANCE
+
+Develop a dedicated Tourist Safety Center.
+
+### Emergency SOS
+
+Provide a clearly accessible emergency interface.
+
+When a tourist activates SOS:
+
+1. Request location permission.
+2. Capture GPS coordinates where available.
+3. Record the emergency timestamp.
+4. Display the detected location.
+5. Allow emergency alerts to be sent to configured contacts.
+6. Notify relevant authorized platform personnel.
+7. Notify the assigned guide when appropriate.
+8. Store the emergency event securely.
+
+### Additional Safety Features
+
+- Trusted emergency contacts.
+- Emergency contact directory.
+- Hospital information.
+- Police station information.
+- Travel safety instructions.
+- Trip location sharing.
+- Weather-related advisories.
+- Scheduled safety check-ins.
+
+Implement appropriate consent and permission handling.
+
+Do not represent an in-app alert as a completed emergency phone call or SMS unless an actual external communication service has confirmed delivery.
+
+# 9. WEATHER AND TRAVEL ADVISORY INTELLIGENCE
+
+Integrate a reliable weather information service.
+
+Display:
+
+- Current temperature.
+- Weather conditions.
+- Humidity.
+- Wind speed.
+- Forecast.
+- Rain probability where supported.
+
+Provide destination-specific information.
+
+### Travel Advisory Categories
+
+- Road closures.
+- Landslide warnings.
+- Flood alerts.
+- Snowfall warnings.
+- Severe weather.
+- Official travel restrictions.
+
+Support administrator-managed travel advisories with:
+
+- Advisory title.
+- Description.
+- Affected destination.
+- Severity.
+- Publication date.
+- Expiration date.
+- Verification source.
+- Current status.
+
+Clearly distinguish official information, third-party data, and user-submitted reports.
+
+# 10. SMART BUDGET AND EXPENSE MANAGEMENT
+
+Develop an integrated financial planning module.
+
+### Budget Management
+
+Tourists can:
+
+- Establish trip budgets.
+- Add expenses.
+- Edit and remove expenses.
+- Categorize expenditure.
+- Monitor remaining balances.
+- Compare estimated and actual expenses.
+- Review daily spending.
+- Generate expense reports.
+
+### Expense Categories
+
+- Accommodation.
+- Transportation.
+- Food.
+- Activities.
+- Shopping.
+- Tour guide.
+- Miscellaneous.
+
+### Group Expense Management
+
+Allow group members to:
+
+- Record shared expenses.
+- Identify the paying member.
+- Select expense participants.
+- Calculate individual contributions.
+- Display outstanding balances.
+- Generate settlement summaries.
+
+Use PKR as the default currency.
+
+# 11. LOCAL TOURISM EXPERIENCE MARKETPLACE
+
+Develop a marketplace that promotes local tourism businesses and cultural experiences.
+
+### Supported Categories
+
+- Local homestays.
+- Traditional food experiences.
+- Cultural activities.
+- Village tours.
+- Photography experiences.
+- Local handicrafts.
+- Adventure activities.
+- Community-based tourism.
+
+Allow authorized providers to submit their services.
+
+Require administrator approval before public listing.
+
+Provide search, detailed service pages, availability information, and booking request functionality.
+
+# 12. VERIFIED PROVIDER AND TRUST MANAGEMENT
+
+Create a transparent verification and reputation framework.
+
+Display:
+
+- Verification status.
+- Professional experience.
+- Completed bookings.
+- Customer ratings.
+- Verified reviews.
+- Response statistics.
+- Cancellation history.
+
+Trust indicators must be calculated using documented and meaningful criteria.
+
+Do not assign arbitrary reputation scores.
+
+# 13. DESTINATION DISCOVERY AND EXPLORATION
+
+Build a visually rich destination discovery system.
+
+### Destination Categories
+
+- Mountains.
+- Valleys.
+- Lakes.
+- Historical locations.
+- Adventure destinations.
+- Cultural destinations.
+- Family destinations.
+
+### Initial Destination Dataset
+
+Include:
+
+- Hunza Valley.
+- Skardu.
+- Fairy Meadows.
+- Naltar Valley.
+- Attabad Lake.
+- Passu Cones.
+- Khunjerab Pass.
+- Naran.
+- Kaghan.
+- Swat.
+- Murree.
+- Neelum Valley.
+- Shogran.
+- Deosai National Park.
+
+### Destination Information
+
+Each destination should provide:
+
+- Name.
+- Description.
+- Photographs.
+- Geographic location.
+- Best visiting season.
+- Popular attractions.
+- Available activities.
+- Estimated travel budget.
+- Weather information.
+- Nearby hotels.
+- Nearby tour guides.
+- Available packages.
+- Interactive map location.
+
+Implement keyword search, category filtering, sorting, and favourites.
+
+# 14. INTERACTIVE MAP AND GEOGRAPHIC SERVICES
+
+Integrate OpenStreetMap with Leaflet.
+
+Required capabilities:
+
+- Interactive destination maps.
+- Attraction markers.
+- Hotel locations.
+- Publicly available provider service locations.
+- Route visualization.
+- User location with permission.
+- Nearby attraction discovery.
+- Location-based destination exploration.
+
+Protect private location data.
+
+Do not publicly display tourists' live GPS locations or providers' private residential addresses.
+
+# 15. INTEGRATED BOOKING AND RESERVATION ENGINE
+
+Implement a unified reservation management system.
+
+### Tour Package Reservations
+
+The tourist selects a package, departure date, and number of participants.
+
+The assigned guide receives a request and can accept or reject it.
+
+### Hotel Reservations
+
+The tourist selects:
+
+- Property.
+- Room category.
+- Check-in date.
+- Check-out date.
+- Number of guests.
+
+Validate room inventory and reservation conflicts before confirmation.
+
+### Vehicle Reservations
+
+The tourist selects:
+
+- Vehicle.
+- Pickup location.
+- Destination.
+- Rental period.
+- Driver requirement.
+
+Validate vehicle availability and conflicting reservations.
+
+### Booking Lifecycle
+
+Use the following statuses:
+
+- Pending.
+- Accepted.
+- Rejected.
+- Confirmed.
+- Cancelled.
+- Completed.
+
+Maintain reservation history and appropriate ownership relationships.
+
+Use database transactions or equivalent concurrency-safe operations for inventory and date validation.
+
+# 16. MESSAGING AND NOTIFICATION SERVICES
+
+Develop an integrated communication system.
+
+### Messaging
+
+Enable authorized users to:
+
+- Communicate with tour guides.
+- Contact hotel owners.
+- Contact vehicle owners.
+- Participate in approved group conversations.
+- View message history.
+- Receive unread message indicators.
+
+### Notification Events
+
+Generate notifications for:
+
+- New booking requests.
+- Booking acceptance.
+- Booking rejection.
+- Booking cancellation.
+- New messages.
+- Provider verification decisions.
+- Travel reminders.
+- Emergency alerts.
+- Travel advisories.
+
+Implement appropriate notification preferences.
+
+# 17. REVIEW AND RATING MANAGEMENT
+
+Allow tourists to review completed services.
+
+Supported review categories:
+
+- Tour guides.
+- Hotels.
+- Vehicles.
+- Tour packages.
+- Local experiences.
+
+Each review should include:
+
+- Rating from 1 to 5.
+- Written feedback.
+- Submission date.
+- Verified booking indicator.
+
+Prevent duplicate reviews for the same eligible booking.
+
+Provide reporting and administrator moderation capabilities.
+
+# 18. SEARCH AND DISCOVERY ENGINE
+
+Implement a centralized search interface.
+
+Searchable resources:
+
+- Destinations.
+- Tour packages.
+- Tour guides.
+- Hotels.
+- Vehicles.
+- Local experiences.
+
+### Filters
+
+- Destination.
+- Price range.
+- Rating.
+- Duration.
+- Availability.
+- Provider verification.
+- Service category.
+
+Ensure search results are database-driven and respect user permissions.
+
+# 19. APPLICATION ROUTING AND PAGE STRUCTURE
+
+Organize the application into the following page hierarchy.
+
+### Public Interface
+
+1. Home.
+2. About TravelMate.
+3. Destination Discovery.
+4. Destination Details.
+5. Tour Packages.
+6. Package Details.
+7. Tour Guides.
+8. Guide Profiles.
+9. Hotels.
+10. Hotel Details.
+11. Vehicles.
+12. Vehicle Details.
+13. Local Experiences.
+14. AI Trip Planner.
+15. Travel Buddy.
+16. Weather and Travel Advisories.
+17. Contact.
+18. Login.
+19. Registration.
+20. Password Recovery.
+
+### Tourist Dashboard
+
+1. Overview.
+2. Profile.
+3. My Trips.
+4. My Bookings.
+5. My Itineraries.
+6. Budget Manager.
+7. Travel Buddy.
+8. Messages.
+9. Notifications.
+10. Emergency Center.
+11. Saved Destinations.
+12. Account Settings.
+
+### Tour Guide Dashboard
+
+1. Overview.
+2. Profile.
+3. My Packages.
+4. Create Package.
+5. Edit Package.
+6. Trip Requests.
+7. Reservations.
+8. Availability.
+9. Messages.
+10. Earnings.
+11. Reviews.
+12. Verification.
+
+### Hotel Owner Dashboard
+
+1. Overview.
+2. Property Management.
+3. Add Property.
+4. Edit Property.
+5. Room Management.
+6. Reservations.
+7. Messages.
+8. Earnings.
+9. Reviews.
+10. Verification.
+
+### Vehicle Owner Dashboard
+
+1. Overview.
+2. Vehicle Management.
+3. Add Vehicle.
+4. Edit Vehicle.
+5. Reservations.
+6. Availability.
+7. Messages.
+8. Earnings.
+9. Reviews.
+10. Verification.
+
+### Administration Panel
+
+1. Dashboard.
+2. User Management.
+3. Guide Verification.
+4. Hotel Verification.
+5. Vehicle Verification.
+6. Destination Management.
+7. Package Management.
+8. Hotel Management.
+9. Vehicle Management.
+10. Reservation Management.
+11. Review Moderation.
+12. Travel Advisory Management.
+13. Emergency Reports.
+14. Analytics.
+15. System Settings.
+
+# 20. DATABASE ARCHITECTURE
+
+Design a structured Firestore data model.
+
+Recommended collections:
+
+- users
+- destinations
+- tourPackages
+- tripRequests
+- itineraries
+- hotels
+- rooms
+- hotelBookings
+- vehicles
+- vehicleBookings
+- travelBuddyRequests
+- travelGroups
+- groupMembers
+- expenses
+- expenseSplits
+- conversations
+- messages
+- notifications
+- reviews
+- favorites
+- localExperiences
+- verificationRequests
+- emergencyEvents
+- travelAdvisories
+- adminLogs
+
+### Data Management Requirements
+
+- Use unique document identifiers.
+- Maintain creation and modification timestamps.
+- Establish appropriate document references.
+- Validate required fields.
+- Implement consistent status values.
+- Configure indexes for search and filtering.
+- Prevent unauthorized modifications.
+- Implement secure document ownership rules.
+- Maintain relevant audit records.
+
+Avoid unnecessary duplication of sensitive information.
+
+# 21. SECURITY AND PRIVACY REQUIREMENTS
+
+Security must be treated as a core system requirement.
+
+Implement:
+
+- Secure authentication.
+- Server-side authorization.
+- Role-based access control.
+- Firestore Security Rules.
+- Input sanitization.
+- Server-side validation.
+- Protected administrative routes.
+- Secure file uploads.
+- Restricted access to verification documents.
+- Protected messaging.
+- Controlled access to emergency information.
+- API rate limiting where appropriate.
+- Audit logging for sensitive administrative actions.
+
+Never rely exclusively on frontend role validation.
+
+Never expose passwords, private verification documents, secret keys, or confidential user information.
+
+# 22. PAYMENT AND FINANCIAL ARCHITECTURE
+
+Develop a payment-ready reservation architecture.
+
+Initial supported methods:
+
+- Cash on arrival.
+- Manual payment requests.
+- Booking payment records.
+- Payment history.
+- Invoice generation.
+
+### Payment Statuses
+
+- Unpaid.
+- Pending.
+- Paid.
+- Refunded.
+
+Prepare the architecture for future integration with supported payment gateways.
+
+Do not claim a real payment has been completed without verified payment confirmation.
+
+Never store raw card information.
+
+# 23. USER INTERFACE AND DESIGN SYSTEM
+
+Create a cohesive premium visual identity throughout the application.
+
+### Brand Colors
+
+- Primary Forest Green: #164B3A
+- Secondary Emerald: #238B65
+- Soft Mint: #DDF3E8
+- Background: #F8FAF8
+- Primary Text: #1D2924
+- White: #FFFFFF
+
+### Design Principles
+
+- Minimalist and professional.
+- Premium travel-oriented aesthetics.
+- Clear visual hierarchy.
+- Consistent spacing.
+- Accessible typography.
+- Responsive layouts.
+- Elegant cards.
+- Subtle shadows.
+- Consistent iconography.
+- Smooth but restrained animations.
+
+### Homepage Structure
+
+1. Navigation bar.
+2. Destination-focused hero section.
+3. Destination search.
+4. Popular destinations.
+5. AI trip planner introduction.
+6. Featured tour packages.
+7. Verified tour guides.
+8. Hotels and transportation.
+9. TravelMate benefits.
+10. How it works.
+11. Customer testimonials.
+12. Call-to-action section.
+13. Comprehensive footer.
+
+### Homepage Hero Content
+
+**Headline:** Discover Pakistan. Experience Every Journey.
+
+**Supporting Text:** Plan personalized adventures with intelligent travel recommendations, trusted local professionals, comfortable accommodation, and seamless booking experiences.
+
+**Primary Action:** Plan My Trip.
+
+**Secondary Action:** Explore Destinations.
+
+Use authentic, high-quality destination imagery, particularly of northern Pakistan.
+
+Maintain a consistent design language across all public pages and role-specific dashboards.
+
+# 24. PERFORMANCE AND ACCESSIBILITY
+
+Ensure:
+
+- Responsive desktop, tablet, and mobile layouts.
+- Optimized image delivery.
+- Lazy loading.
+- Efficient database queries.
+- Reusable components.
+- Accessible navigation.
+- Keyboard-friendly controls.
+- Form accessibility.
+- Meaningful error messages.
+- Loading indicators.
+- Error boundaries.
+- SEO-friendly metadata.
+- Reliable navigation and routing.
+
+# 25. FUNCTIONAL ACCEPTANCE CRITERIA
+
+The project will be considered functionally complete when the following workflows operate successfully.
+
+### Workflow A: Tourist
+
+Registration → Authentication → Destination Exploration → AI Itinerary Generation → Itinerary Saving → Guide Request → Hotel Reservation → Vehicle Reservation → Booking Management.
+
+### Workflow B: Tour Guide
+
+Registration → Verification Request → Administrator Approval → Package Creation → Tourist Request → Request Acceptance → Tourist Communication.
+
+### Workflow C: Hotel Owner
+
+Registration → Verification → Property Creation → Room Configuration → Reservation Request → Reservation Management.
+
+### Workflow D: Vehicle Owner
+
+Registration → Verification → Vehicle Registration → Availability Management → Rental Request → Reservation Confirmation.
+
+### Workflow E: Travel Buddy
+
+Travel Request Creation → Compatibility Matching → Joining Request → Approval → Group Creation → Group Communication.
+
+### Workflow F: Administrator
+
+Secure Login → Analytics Dashboard → User Management → Provider Verification → Destination Management → Reservation Monitoring → Travel Advisory Publication.
+
+### Technical Validation
+
+Verify:
+
+- All buttons perform their intended actions.
+- All forms validate submitted information.
+- Database records persist correctly.
+- Role permissions are enforced.
+- Reservations cannot conflict.
+- Dashboard data belongs to the authenticated user.
+- Notifications correspond to actual system events.
+- Search returns appropriate records.
+- Error states are handled correctly.
+- Responsive interfaces work across screen sizes.
+
+# 26. IMPLEMENTATION STRATEGY
+
+Develop TravelMate through clearly defined implementation phases.
+
+**Phase 1 – Foundation**
+- Project architecture.
+- Design system.
+- Authentication.
+- User roles.
+- Database configuration.
+- Public navigation.
+
+**Phase 2 – Core Platform**
+- Tourist dashboard.
+- Guide dashboard.
+- Hotel owner dashboard.
+- Vehicle owner dashboard.
+- Administrative dashboard.
+
+**Phase 3 – Tourism Operations**
+- Destination discovery.
+- Tour package management.
+- Hotel management.
+- Vehicle management.
+- Reservation workflows.
+
+**Phase 4 – AI Intelligence**
+- AI Smart Trip Planner.
+- Personalized recommendations.
+- Dynamic itinerary re-planning.
+
+**Phase 5 – Advanced Services**
+- Travel Buddy Matching.
+- Budget Management.
+- Tourist Safety.
+- Weather Integration.
+- Interactive Maps.
+- Local Experience Marketplace.
+
+**Phase 6 – Communication**
+- Messaging.
+- Notifications.
+- Reviews.
+- Provider reputation.
+
+**Phase 7 – Quality Assurance**
+- Functional testing.
+- Security testing.
+- Database validation.
+- Performance optimization.
+- Responsive testing.
+- Deployment preparation.
+
+Do not remove or break previously completed functionality while implementing subsequent phases.
+
+# 27. FINAL PROJECT DELIVERABLES
+
+Deliver a complete, integrated, and maintainable TravelMate application containing:
+
+- A professional responsive frontend.
+- A functional backend.
+- Secure authentication.
+- Five authorization categories: tourist, guide, hotel owner, vehicle owner, and administrator.
+- Complete user dashboards.
+- Database integration.
+- AI-powered trip planning.
+- Intelligent itinerary adjustment.
+- Tour package management.
+- Hotel and vehicle reservations.
+- Travel Buddy Matching.
+- Tourist Safety Center.
+- Weather and travel advisory integration.
+- Budget and expense management.
+- Local Experience Marketplace.
+- Interactive mapping.
+- Real-time communication where configured.
+- Notification services.
+- Review and rating management.
+- Administrative analytics.
+- Security controls.
+- Technical documentation.
+- Deployment instructions.
+
+# 28. FINAL DEVELOPMENT DIRECTIVE
+
+Approach this project as a senior full-stack engineering team responsible for delivering a professional tourism technology product.
+
+Prioritize functional correctness, maintainability, security, performance, and user experience.
+
+Every module must be integrated with the central application architecture.
+
+Avoid disconnected demonstrations, decorative-only controls, fabricated information, and incomplete workflows.
+
+Where third-party integrations require configuration, provide clear environment-variable requirements, integration instructions, and appropriate fallback behavior.
+
+When implementation scope exceeds a single development iteration, continue in structured phases without discarding existing code or changing established architecture.
+
+The final result must be a coherent, fully functional, database-connected smart tourism platform suitable for Final Year Project evaluation, live demonstration, and future commercial expansion.
+
+**TRAVELMATE — PLAN SMARTER. TRAVEL SAFER. EXPLORE BETTER.**
